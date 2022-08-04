@@ -22,21 +22,21 @@ d = diff(aboveThresh); % Find rising edges
 numPeaks = sum(abs(d))./2; % Count rising edges.
 fprintf("diff heartrate; %s \n", numPeaks ./ numel(signalData.time) .* 60 .* fs)
 
-3
 %
 % denoise EMG signal
 % Step 1 notchfilter: remove baseline noise
 % Step 2 bandpass filter: remove unrelated signal
 % Step 3 Remove ECG from EMG ...?
 % Step 4 Down sampling
-% Step 4 Rectifying
+% Step 5 Rectifying
 %
 
 EMGs = signalData.data(:, 1:5);
-i = 1;
+i = 5;
 baselineRemovedEMG = filtfilt(notchfilter, double(EMGs(:, i)));
 bandpassedEMG = bandpass(baselineRemovedEMG, [40, 450], fs);
 downsampledEMG = downsample(bandpassedEMG,10);
 rectifiedEMG = abs(downsampledEMG);
 smoothedEMG = sqrt(movmean(rectifiedEMG.^2, 50));
-plot(downsample(signalData.time,10), rectifiedEMG, downsample(signalData.time,10), smoothedEMG)
+plot(signalData.time, double(EMGs(:, i)), downsample(signalData.time,10), downsampledEMG, downsample(signalData.time,10), smoothedEMG)
+legend('rawdata', 'denoised data', 'smoothed data')
