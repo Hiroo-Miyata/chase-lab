@@ -32,11 +32,17 @@ fprintf("diff heartrate; %s \n", numPeaks ./ numel(signalData.time) .* 60 .* fs)
 %
 
 EMGs = signalData.data(:, 1:5);
-i = 5;
-baselineRemovedEMG = filtfilt(notchfilter, double(EMGs(:, i)));
+i = 3;
+baselineRemovedEMG = double(EMGs(:, i));
+for s=(1:8)
+    d = designfilt('bandstopiir', 'filterOrder', 2, ...
+                    'HalfPowerFrequency1', 60*s-1, 'HalfPowerFrequency2', 60*s+1, ...
+                    'DesignMethod', 'butter', 'SampleRate', fs);
+    baselineRemovedEMG = filtfilt(d, baselineRemovedEMG);
+end
 bandpassedEMG = bandpass(baselineRemovedEMG, [40, 450], fs);
-downsampledEMG = downsample(bandpassedEMG,10);
-rectifiedEMG = abs(downsampledEMG);
-smoothedEMG = sqrt(movmean(rectifiedEMG.^2, 50));
-plot(signalData.time, double(EMGs(:, i)), downsample(signalData.time,10), downsampledEMG, downsample(signalData.time,10), smoothedEMG)
-legend('rawdata', 'denoised data', 'smoothed data')
+rectifiedEMG = abs(bandpassedEMG);
+smoothedEMG = sqrt(movmean(rectifiedEMG.^2, 100));
+downsampledEMG = downsample(smoothedEMG,10);
+%plot(signalData.time, double(EMGs(:, i)), downsample(signalData.time,10), downsampledEMG, downsample(signalData.time,10), smoothedEMG)
+%legend('rawdata', 'denoised data', 'smoothed data')

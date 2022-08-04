@@ -14,9 +14,9 @@
 
 Notchfilter information:
 '''
-type: 
-order: 
-cutoff frequency: 
+type: butterworth
+order: 2 
+cutoff frequency: 59 ~ 61 Hz
 '''
 
 How signal changed time and frequency spectrum
@@ -26,9 +26,9 @@ figure * 2
 
 Bandpass filter information:
 '''
-type: 
-order: 
-cutoff frequency: 
+type: butter worth
+order: 2
+cutoff frequency: 40 Hz ~ 450 Hz
 '''
 
 How signal changed time and frequency spectrum
@@ -53,3 +53,9 @@ figure
 Downsampled from 10 KHz to 1 KHz
 
 ## Step 6 separate data to each trail (3d double array)
+
+get mean trajectory of EMG data
+
+figure 
+
+figure 
