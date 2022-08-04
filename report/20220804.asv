@@ -1,0 +1,25 @@
+# relationship between EMG and reward experiment
+
+**Hypothesis**
+- EMG and Reward has a relationship <= adam did but didn't work?
+- EMG and neural activity has a correlation
+- Muscle fatigue has a relation ship with neural activity or reward
+
+## Today's hypothesis: check the relationship between EMG and Reward
+
+How to measure it?
+- different condition
+    - EMG change at different reward
+    - EMG change at different direction
+    - EMG change at different reward and direction
+
+what data I use?
+- mean RMS-EMG of each trail at different reward and direction
+
+## Report
+
+### 1. get RMS-EMG of each trail
+data struct
+- EMG channel label
+- data 5 channel
+- 
