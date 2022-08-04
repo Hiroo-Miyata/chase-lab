@@ -32,7 +32,7 @@ fprintf("diff heartrate; %s \n", numPeaks ./ numel(signalData.time) .* 60 .* fs)
 %
 
 EMGs = signalData.data(:, 1:5);
-i = 3;
+i = 1;
 baselineRemovedEMG = double(EMGs(:, i));
 for s=(1:8)
     d = designfilt('bandstopiir', 'filterOrder', 2, ...
