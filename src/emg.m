@@ -1,27 +1,42 @@
 alldata = load("../data/synchronized/Rocky_synchedSpikeAndAnalogData_20220223.mat");
 signalData = alldata.analogData;
-
-% measure heart rate from EKG(ECG) signal
 fs = 10000;
+
+%
+% measure heart rate from EKG(ECG) signal
+% 
 ECG = signalData.data(:, 8);
 
-
-% heart rate = how many value > RMS per minutes
+% for fft plot [y,x] = periodogram(double(ECG), [], [], fs);
 
 % notch filtering
+notchfilter = designfilt('bandstopiir', 'filterOrder', 2, ...
+                        'HalfPowerFrequency1', 59, 'HalfPowerFrequency2', 61, ...
+                        'DesignMethod', 'butter', 'SampleRate', fs);
+denoisedECG = filtfilt(notchfilter, double(ECG));
 
-rmsECG = rms(ECG) .* 4;
-count = 0;
-status = 0;
+% heart rate = how many value > RMS*3 per minutes
+rmsECG = rms(denoisedECG) .* 3;
+aboveThresh = denoisedECG > rmsECG;
+d = diff(aboveThresh); % Find rising edges
+numPeaks = sum(abs(d))./2; % Count rising edges.
+fprintf("diff heartrate; %s \n", numPeaks ./ numel(signalData.time) .* 60 .* fs)
 
-for i = 1:size(ECG)
-    %fprintf('%s > %s', ECG1(i), rmsECG1);
-    if ECG(i) > rmsECG && status == 0
-        count = count + 1;
-        status = 1;
-    elseif ECG(i) < rmsECG && status == 1
-        status = 0;
-    end
-end
+3
+%
+% denoise EMG signal
+% Step 1 notchfilter: remove baseline noise
+% Step 2 bandpass filter: remove unrelated signal
+% Step 3 Remove ECG from EMG ...?
+% Step 4 Down sampling
+% Step 4 Rectifying
+%
 
-fprintf("heartrate: %s \n", count ./ numel(signaldata.time) .* 60 .* fs);
+EMGs = signalData.data(:, 1:5);
+i = 1;
+baselineRemovedEMG = filtfilt(notchfilter, double(EMGs(:, i)));
+bandpassedEMG = bandpass(baselineRemovedEMG, [40, 450], fs);
+downsampledEMG = downsample(bandpassedEMG,10);
+rectifiedEMG = abs(downsampledEMG);
+smoothedEMG = sqrt(movmean(rectifiedEMG.^2, 50));
+plot(downsample(signalData.time,10), rectifiedEMG, downsample(signalData.time,10), smoothedEMG)
