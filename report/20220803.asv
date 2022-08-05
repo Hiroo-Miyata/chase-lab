@@ -20,8 +20,11 @@ cutoff frequency: 59 ~ 61 Hz, 119 ~ 121 Hz, ... , 479 ~ 481 Hz
 
 How signal changed time and frequency spectrum
 
-![after baseline noise removed raw signal](../result/images/20220803/after-baseline-noise-remove-Tric-raw.jpg)
-![after baseline noise removed power spectrum](../result/images/20220803/after-baseline-noise-remove-Tric-fft.jpg)
+raw signal             |  power spectrum
+:-------------------------:|:-------------------------:
+![after baseline noise removed raw signal](../result/images/20220803/after-baseline-noise-remove-Tric-raw.jpg)  |  ![after baseline noise removed power spectrum](../result/images/20220803/after-baseline-noise-remove-Tric-fft.jpg)
+
+
 
 ## Step 2 bandpass filter: remove unrelated signal
 
@@ -34,14 +37,20 @@ cutoff frequency: ~ 40 Hz and 450 Hz ~
 
 How signal changed time and frequency spectrum
 
-![after bandpass raw signal](../result/images/20220803/after-bandpassed-Tric-raw.jpg)
-![after bandpass power spectrum](../result/images/20220803/after-bandpassed-Tric-fft.jpg)
+raw signal             |  power spectrum
+:-------------------------:|:-------------------------:
+![after bandpass raw signal](../result/images/20220803/after-bandpassed-Tric-raw.jpg)  |  ![after bandpass power spectrum](../result/images/20220803/after-bandpassed-Tric-fft.jpg)
 
 ## Step 3 Remove ECG from EMG ...?
 
 I couldn't detect ECG signal from EMG
 
-6 figure with small time scale (ECG and 5 EMG)
+
+ECG signal(first)             |  EMG signals(Trap, PDel, Tric, Lbic and ADel)
+:-------------------------:|:-------------------------:
+![denoised ECG](../result/images/20220803/denoisedECG.jpg)  |  ![EMG Trap](../result/images/20220803/checkECG-Trap.jpg)
+![EMG PDel](../result/images/20220803/checkECG-PDel.jpg)  |  ![EMG Tric](../result/images/20220803/checkECG-Tric.jpg)
+![EMG Lbic](../result/images/20220803/checkECG-Lbic.jpg)  |  ![EMG ADel](../result/images/20220803/checkECG-ADel.jpg)
 
 ## Step 4 Rectifying and smoothing by RMS (time window 10 ms)
 
@@ -50,9 +59,8 @@ Smoothing: Choose RMS-EMG (we may change later)
 
 How signal changed time time window 10m, 50m, and 200m sec
 
-![smoothedsignal by 10m](../result/images/20220803/after-smoothed-Tric-10m.jpg)
-![smoothedsignal by 50m](../result/images/20220803/after-smoothed-Tric-50m.jpg)
-![smoothedsignal by 200m](../result/images/20220803/after-smoothed-Tric-200m.jpg)
+
+![smoothedsignal by 10m](../result/images/20220803/after-smoothed-Tric-10m.jpg) ![smoothedsignal by 50m](../result/images/20220803/after-smoothed-Tric-50m.jpg) ![smoothedsignal by 200m](../result/images/20220803/after-smoothed-Tric-200m.jpg)
 
 ## Step 5 Down sampling
 
