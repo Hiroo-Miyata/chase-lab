@@ -1,0 +1,9 @@
+emgByReward1 = double.empty(0, 5);
+emgByReward2 = double.empty(0, 5);
+emgByReward3 = double.empty(0, 5);
+emgByReward4 = double.empty(0, 5);
+emgByReward = [emgByReward1, emgByReward2, emgByReward3, emgByReward4];
+for i=(1:2) % length(file.singleTrialData)
+    reward = file.singleTrialData(i).prop.reward;
+    emgByReward(reward) = file.singleTrialData(i).emg;
+end

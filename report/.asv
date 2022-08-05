@@ -2,6 +2,7 @@
 
 **Hypothesis**
 - EMG and Reward has a relationship <= adam did but didn't work?
+- EMG and Direction has a relationship
 - EMG and neural activity has a correlation
 - Muscle fatigue has a relation ship with neural activity or reward
 
@@ -19,7 +20,18 @@ what data I use?
 ## Report
 
 ### 1. get RMS-EMG of each trail
-data struct
-- EMG channel label
-- data 5 channel
-- 
+**data struct**
+- EMG
+    - EMG channel label
+    - data 5 channel
+    - fs
+- Behavior
+    - each trails direction
+    - each trails reward
+    - each trails hand movement
+    - each trails result
+- neural activity
+    - channel label
+    - interior data
+    - posterior data
+

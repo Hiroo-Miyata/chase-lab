@@ -2,6 +2,7 @@
 
 **Hypothesis**
 - EMG and Reward has a relationship <= adam did but didn't work?
+- EMG and Direction has a relationship
 - EMG and neural activity has a correlation
 - Muscle fatigue has a relation ship with neural activity or reward
 
@@ -34,3 +35,4 @@ what data I use?
     - interior data
     - posterior data
 
+## Bonus relationship between handmovement and EMG signal
