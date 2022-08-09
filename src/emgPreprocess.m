@@ -45,7 +45,7 @@ for i=(1:5)
                         'DesignMethod', 'butter', 'SampleRate', fs);
         baselineRemovedEMG = filtfilt(d, baselineRemovedEMG);
     end
-    bandpassedEMG = bandpass(baselineRemovedEMG, [40, 450], fs);
+    bandpassedEMG = bandpass(baselineRemovedEMG, [10, 450], fs);
     rectifiedEMG = abs(bandpassedEMG);
     smoothedEMG = sqrt(movmean(rectifiedEMG.^2, 100));
     downsampledEMG = downsample(smoothedEMG,10);

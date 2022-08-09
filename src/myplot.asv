@@ -1,0 +1,16 @@
+
+% for my plot
+classdef myplot
+    methods (Static)
+        function out = welchplot(time, signal, fs)
+            
+            %% Show the power spectrum in 4 ways (takes a bit of time to run)
+            figure
+            subplot(2,2,1); periodogram(curEMG,[],[],fs); axis([0 1 -inf inf]); title('Periodogram (overall)')
+            subplot(2,2,2); pwelch(curEMG,[],[],[],fs); axis([0 1 -inf inf]); title('Welchs, default (8 window)')
+            subplot(2,2,3); pwelch(curEMG,30*fs,[],[],fs); axis([0 1 -inf inf]); title('Welchs, 30s window')
+            subplot(2,2,4); pwelch(curEMG,10*fs,[],[],fs); axis([0 1 -inf inf]); title('Welchs, 10s window')
+
+        end
+    end
+end

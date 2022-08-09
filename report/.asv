@@ -1,12 +1,6 @@
-# relationship between EMG and reward experiment
+# Goal: get clear relationship between EMG and reward experiment
 
-**Hypothesis**
-- EMG and Reward has a relationship <= adam did but didn't work?
-- EMG and Direction has a relationship
-- EMG and neural activity has a correlation
-- Muscle fatigue has a relation ship with neural activity or reward
-
-## Today's hypothesis: check the relationship between EMG and Reward
+## Today's Goal: check the relationship between EMG and Reward
 
 How to measure it?
 - different condition
@@ -19,6 +13,39 @@ what data I use?
 
 ## Report
 
+### 0. modify preprocessing
+
+- apply welth's method for visualizing PSD
+- change cutoff frequency of bandpass filter lower
+- Check ECG signal was contaminated at rest(~120s)
+
+
+#### apply welth's method for visualizing PSD
+
+#### change cutoff frequency of bandpass filter lower
+
+#### Check ECG signal was contaminated at rest(~120s)
+
+### 0. check the data structure
+
+before determine how to analyze, find the fact that each trial has a different time scale.
+It's difficult to make figure.
+I have to understand state-transition and think again what EMG signal I use for analysis.
+
+there are 6 type of state transition( the number in the parentheses is the amount of the trial of the state transition)
+- 1,2,3,7 (40)
+- 1,2,3,11,21 (71)
+- 1,2,3,4,5,6,7 (772) 
+- 1,2,3,4,11,21 (21)
+- 1,2,3,4,5,12,21 (121)
+- 1,2,3,4,5,6,13,21 (119)
+
+
+This result suggests me that I should separate data by the state-transitions
+
+
+And also, it is a bigger problem, the transition time between the state is different in single trial
+
 ### 1. get RMS-EMG of each trail
 **data struct**
 - EMG
@@ -26,12 +53,14 @@ what data I use?
     - data 5 channel
     - fs
 - Behavior
-    - each trails direction
-    - each trails reward
-    - each trails hand movement
-    - each trails result
+    - direction
+    - reward
+    - hand movement
+    - result
+    - state transition
 - neural activity
     - channel label
     - interior data
     - posterior data
 
+## Bonus relationship between handmovement and EMG signal
