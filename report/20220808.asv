@@ -40,27 +40,22 @@ there are 6 type of state transition( the number in the parentheses is the amoun
 - 1,2,3,4,5,12,21 (121)
 - 1,2,3,4,5,6,13,21 (119)
 
-
 This result suggests me that I should separate data by the state-transitions
 
 
-And also, it is a bigger problem, the transition time between the state is different in single trial
+And also, it is a bigger problem, but the transition time between the state is different in single trial. here is the histograms of each transition time
 
-### 1. get RMS-EMG of each trail
-**data struct**
-- EMG
-    - EMG channel label
-    - data 5 channel
-    - fs
-- Behavior
-    - direction
-    - reward
-    - hand movement
-    - result
-    - state transition
-- neural activity
-    - channel label
-    - interior data
-    - posterior data
+![trasition time distributions](../result/images/20220809/time-distribution-each-transition.jpg)
 
-## Bonus relationship between handmovement and EMG signal
+
+# PS - after meeting with Adam 8/9
+
+Adam answered these questions
+- how to use EMG data at different time length
+- how to use EMG data at different state transition
+
+that **We pick up data based on the analysis we want**. And as a first step of the analysis, We determined to use data around Go Cue(-200ms to +600ms)
+
+Also, he explained why there are variations in the same state transition
+
+2-3, 4-5, 6-7: there were +- 16,17 ms results => sampling rate of movement is 60Hz so that 1 frame error made this odd phenomenon
