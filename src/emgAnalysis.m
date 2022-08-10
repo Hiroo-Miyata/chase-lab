@@ -32,15 +32,33 @@ end
 % 2. show each signal and mean trajectory
 X = (-200:600);
 plotPosition = [6, 3, 2, 1, 4, 7, 8, 9];
+% for channel=(1:5)
+%     figure
+%     for direction=(1:8)
+%         Y = MEG(:,channel,directionArray==direction);
+%         plotY = reshape(Y, 801, []);
+%         subplot(3,3, plotPosition(direction));
+%         plot(X, plotY, 'Color', '#aaaaaa');
+%         hold on
+%         plot(X, mean(plotY, 2), 'Color', 'k');
+%         hold off
+%     end
+%     sgtitle(string(file.muscle(channel)) + ' at each direction');
+% end
+
+% 3. show mean trajectory at each reward and direction
+rewardColor = ['r', 'y', 'b', 'k'];
 for channel=(1:5)
     figure
     for direction=(1:8)
-        Y = MEG(:,channel,directionArray==direction);
-        plotY = reshape(Y, 801, []);
-        subplot(3,3, plotPosition(direction));
-        plot(X, plotY, 'Color', '#aaaaaa');
-        hold on
-        plot(X, mean(plotY, 2), 'Color', 'k');
+        for reward=(1:4)
+            condition = all([directionArray==direction; rewardArray==reward]); % get 0-1 array which fill both conditions
+            Y = MEG(:,channel, condition);
+            plotY = reshape(Y,801,[]);
+            subplot(3,3,plotPosition(direction));
+            plot(X, mean(plotY, 2), 'Color', rewardColor(reward));
+            hold on
+        end
         hold off
     end
     sgtitle(string(file.muscle(channel)) + ' at each direction');
