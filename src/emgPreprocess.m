@@ -68,5 +68,9 @@ for t=(1:length(trialStartTimes)-1)
     singleTrialData(t).prop.reward = movementData.data(t).TrialData.rewardLabel;
     singleTrialData(t).prop.startTarget = movementData.data(t).TrialData.startTarget;
     singleTrialData(t).prop.endTarget = movementData.data(t).TrialData.endTarget;
+    singleTrialData(t).prop.stateTransition = movementData.data(t).TrialData.stateTransitions;
     singleTrialData(t).handKinematics = movementData.data(t).TrialData.handKinematics;
 end
+
+save('../data/processed/singleTrials_20220223.mat', 'singleTrialData', 'signalData.EMGMuscleNames');
+clear;
