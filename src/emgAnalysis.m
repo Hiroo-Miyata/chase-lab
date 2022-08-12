@@ -1,5 +1,5 @@
 % 1. fetch trials from all data
-file = load('../data/processed/singleTrials_20220223.mat');
+file = load('../data/processed/singleTrials_20220223_movave_50ms.mat');
 singleTrialData = file.singleTrialData;
 
 dataLength = 0;
@@ -32,19 +32,23 @@ end
 % 2. show each signal and mean trajectory
 X = (-200:600);
 plotPosition = [6, 3, 2, 1, 4, 7, 8, 9];
-% for channel=(1:5)
-%     figure
-%     for direction=(1:8)
-%         Y = MEG(:,channel,directionArray==direction);
-%         plotY = reshape(Y, 801, []);
-%         subplot(3,3, plotPosition(direction));
-%         plot(X, plotY, 'Color', '#aaaaaa');
-%         hold on
-%         plot(X, mean(plotY, 2), 'Color', 'k');
-%         hold off
-%     end
-%     sgtitle(string(file.muscle(channel)) + ' at each direction');
-% end
+screenSize = [1 1 1200 900];
+for channel=(1:5)
+    figure
+    for direction=(1:8)
+        Y = MEG(:,channel,directionArray==direction);
+        plotY = reshape(Y, 801, []);
+        subplot(3,3, plotPosition(direction));
+        plot(X, plotY, 'Color', '#aaaaaa');
+        hold on
+        plot(X, mean(plotY, 2), 'Color', 'k');
+        hold off
+    end
+    subplot(3,3,5);
+    imshow('images/directions.png')
+    hold off
+    sgtitle(string(file.muscleLabel(channel)) + ' at each direction');
+end
 
 % 3. show mean trajectory at each reward and direction
 rewardColor = ['r', 'y', 'b', 'k'];
@@ -61,7 +65,10 @@ for channel=(1:5)
         end
         hold off
     end
-    sgtitle(string(file.muscle(channel)) + ' at each direction');
+    subplot(3,3,5);
+    imshow('images/directions.png')
+    hold off
+    sgtitle(string(file.muscleLabel(channel)) + ' at each direction');
 end
 
 % transDict = containers.Map;

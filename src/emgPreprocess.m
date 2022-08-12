@@ -1,6 +1,7 @@
 alldata = load("../data/synchronized/Rocky_synchedSpikeAndAnalogData_20220223.mat");
 signalData = alldata.analogData;
 fs = 10000;
+new_fs = 1000;
 
 %
 % measure heart rate from EKG(ECG) signal
@@ -8,17 +9,22 @@ fs = 10000;
 ECG = signalData.data(:, 8);
 
 % notch filtering
-notchfilter = designfilt('bandstopiir', 'filterOrder', 2, ...
-                        'HalfPowerFrequency1', 59, 'HalfPowerFrequency2', 61, ...
-                        'DesignMethod', 'butter', 'SampleRate', fs);
-denoisedECG = filtfilt(notchfilter, double(ECG));
+denoisedECG = double(ECG);
+for s=(1:8)
+    d = designfilt('bandstopiir', 'filterOrder', 2, ...
+                    'HalfPowerFrequency1', 60*s-1, 'HalfPowerFrequency2', 60*s+1, ...
+                    'DesignMethod', 'butter', 'SampleRate', fs);
+    denoisedECG = filtfilt(d, denoisedECG);
+end
+
+denoisedECG = downsample(denoisedECG, 10);
 
 % heart rate = how many value > RMS*3 per minutes
-rmsECG = rms(denoisedECG) .* 3;
-aboveThresh = denoisedECG > rmsECG;
-d = diff(aboveThresh); % Find rising edges
-numPeaks = sum(abs(d))./2; % Count rising edges.
-fprintf("diff heartrate; %s \n", numPeaks ./ numel(signalData.time) .* 60 .* fs)
+% rmsECG = rms(denoisedECG) .* 3;
+% aboveThresh = denoisedECG > rmsECG;
+% d = diff(aboveThresh); % Find rising edges
+% numPeaks = sum(abs(d))./2; % Count rising edges.
+% fprintf("diff heartrate; %s \n", numPeaks ./ numel(signalData.time) .* 60 .* fs)
 
 
 % separate signal by trial
@@ -45,15 +51,17 @@ for i=(1:5)
                         'DesignMethod', 'butter', 'SampleRate', fs);
         baselineRemovedEMG = filtfilt(d, baselineRemovedEMG);
     end
-    bandpassedEMG = bandpass(baselineRemovedEMG, [10, 450], fs);
+    baselineRemovedEMG = downsample(baselineRemovedEMG,10);
+    [ ECGremovedEMG, ec] = adaptiveFilter(baselineRemovedEMG, denoisedECG, baselineRemovedEMG(1:100*new_fs), ecgrest(1:100*new_fs),new_fs);
+    bandpassedEMG = bandpass(ECGremovedEMG, [20, 450], new_fs);
     rectifiedEMG = abs(bandpassedEMG);
-    smoothedEMG = sqrt(movmean(rectifiedEMG.^2, 100));
-    downsampledEMG = downsample(smoothedEMG,10);
-    preprocessedEMGs(:, i) = downsampledEMG; % Step 2 smoothed and put into the array
+    smoothedEMG = movmean(rectifiedEMG, round(0.1*new_fs)); %RMS: sqrt(movmean(rectifiedEMG.^2, 500))
+    preprocessedEMGs(:, i) = smoothedEMG; % Step 2 smoothed and put into the array
 end
 % for plot: plot(signalData.time, double(EMGs(:, i)), downsample(signalData.time,10), downsampledEMG, downsample(signalData.time,10), smoothedEMG)
 %legend('rawdata', 'denoised data', 'smoothed data')
 % for fft plot [y,x] = periodogram(double(EMG(:,i)), [], [], fs);
+% pwelch(curEMG,30*fs,[],[],fs); axis([0 1 -inf inf]); title('Welchs, 30s window')
 
 
 % Step 3 separate by trial from synchInfo
@@ -72,5 +80,5 @@ for t=(1:length(trialStartTimes)-1)
     singleTrialData(t).handKinematics = movementData.data(t).TrialData.handKinematics;
 end
 
-save('../data/processed/singleTrials_20220223.mat', 'singleTrialData', 'signalData.EMGMuscleNames');
-clear;
+muscleLabel = signalData.EMGMuscleNames;
+save('../data/processed/singleTrials_20220223_movave_100ms.mat', 'singleTrialData', 'muscleLabel');
