@@ -1,30 +1,20 @@
 alldata = load("../data/synchronized/Rocky_synchedSpikeAndAnalogData_20220223.mat");
 signalData = alldata.analogData;
 fs = 10000;
+new_fs = 1000;
 
 %
 % measure heart rate from EKG(ECG) signal
 % 
 ECG = signalData.data(:, 8);
-
-% notch filtering
 denoisedECG = double(ECG);
-for s=(1:8)
+for s=(1:8) % notch filtering
     d = designfilt('bandstopiir', 'filterOrder', 2, ...
                     'HalfPowerFrequency1', 60*s-1, 'HalfPowerFrequency2', 60*s+1, ...
                     'DesignMethod', 'butter', 'SampleRate', fs);
     denoisedECG = filtfilt(d, denoisedECG);
 end
-
 denoisedECG = downsample(denoisedECG, 10);
-
-% heart rate = how many value > RMS*3 per minutes
-% rmsECG = rms(denoisedECG) .* 3;
-% aboveThresh = denoisedECG > rmsECG;
-% d = diff(aboveThresh); % Find rising edges
-% numPeaks = sum(abs(d))./2; % Count rising edges.
-% fprintf("diff heartrate; %s \n", numPeaks ./ numel(signalData.time) .* 60 .* fs)
-
 
 % separate signal by trial
 % Step 1 prepare (downsampled length, 5) double array
@@ -37,7 +27,7 @@ preprocessedEMGs = double.empty(ceil(length(signalData.time)/10), 0); % Step 1 p
 % denoise EMG signal
 % 1 notchfilter: remove baseline noise
 % 2 bandpass filter: remove unrelated signal
-% 3 Remove ECG from EMG ...?
+% 3 Remove ECG from EMG
 % 4 Rectifying & smoothing
 % 5 Down sampling to 1 KHz
 
@@ -51,10 +41,10 @@ for i=(1:5)
         baselineRemovedEMG = filtfilt(d, baselineRemovedEMG);
     end
     baselineRemovedEMG = downsample(baselineRemovedEMG,10);
-    [ ECGremovedEMG, ec] = adaptiveFilter(baselineRemovedEMG, denoisedECG, baselineRemovedEMG(1:100*fs), ecgrest(1:100*fs),fs);
-    bandpassedEMG = bandpass(ECGremovedEMG, [10, 450], fs);
+    [ ECGremovedEMG, ec] = adaptiveFilter(baselineRemovedEMG, denoisedECG, baselineRemovedEMG(1:100*new_fs), ecgrest(1:100*new_fs),new_fs);
+    bandpassedEMG = bandpass(ECGremovedEMG, [20, 450], new_fs);
     rectifiedEMG = abs(bandpassedEMG);
-    smoothedEMG = movmean(rectifiedEMG, 500); %RMS: sqrt(movmean(rectifiedEMG.^2, 500))
+    smoothedEMG = movmean(rectifiedEMG, round(0.05*new_fs)); %RMS: sqrt(movmean(rectifiedEMG.^2, 500))
     preprocessedEMGs(:, i) = smoothedEMG; % Step 2 smoothed and put into the array
 end
 % for plot: plot(signalData.time, double(EMGs(:, i)), downsample(signalData.time,10), downsampledEMG, downsample(signalData.time,10), smoothedEMG)
@@ -80,4 +70,4 @@ for t=(1:length(trialStartTimes)-1)
 end
 
 muscleLabel = signalData.EMGMuscleNames;
-save('../data/processed/singleTrials_20220223_movave_50ms.mat', 'singleTrialData', 'muscleLabel');
+save('../data/processed/singleTrials_20220223_movave_100ms.mat', 'singleTrialData', 'muscleLabel');
