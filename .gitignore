@@ -1,2 +1,2 @@
-data/*
+data/*/*.mat
 result/images/*/*.fig

@@ -8,11 +8,18 @@ for i=(1:length(singleTrialData))
     meanEMGEachTrial(i, :) = mean(singleTrialData(i).emg, 1);
 end
 
-
-boxplot(meanEMGEachTrial(:, :), file.muscleLabel(1:5))
+baselines = mean(file.emg_rest, 1);
+% boxplot(meanEMGEachTrial(:, :), file.muscleLabel(1:5))
 
 for c=(1:5)
     [~,maxid] = max(meanEMGEachTrial(:,c));
     [~,minid] = min(meanEMGEachTrial(:,c));
-    fprintf('Channel: %s, max: %f, min: %d \n', [string(file.muscleLabel(c)), maxid, minid]);
+    fprintf('Channel: %s, max: %d, min: %d \n', string(file.muscleLabel(c)), int16(maxid), int16(minid));
+    figure
+    plot(singleTrialData(maxid).emg(:,c));
+    hold on;
+    title(string(file.muscleLabel(c)) + ' at max')
+    figure
+    plot(singleTrialData(minid).emg(:,c));
+    title(string(file.muscleLabel(c)) + ' at min')
 end

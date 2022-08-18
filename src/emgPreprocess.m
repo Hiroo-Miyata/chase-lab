@@ -73,4 +73,6 @@ for t=(1:length(alldata.trialData)-1)
 end
 
 muscleLabel = signalData.EMGMuscleNames;
-save('../data/processed/singleTrials_Rocky20220217_movave_50ms.mat', 'singleTrialData', 'muscleLabel');
+emg_rest = preprocessedEMGs(1:120*new_fs, :);
+save('../data/processed/singleTrials_Rocky20220217_movave_50ms.mat', 'singleTrialData', 'muscleLabel', "emg_rest");
+clear;
