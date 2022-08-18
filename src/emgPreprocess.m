@@ -1,4 +1,4 @@
-alldata = load("../data/synchronized/Rocky20220217_Trials9_1465_behaviorProcessed_20220815_101651.mat");
+alldata = load("../data/synchronized/Rocky20220303_Trials9_1260_behaviorProcessed_20220815_103412.mat");
 signalData = alldata.analogData;
 fs = 10000;
 new_fs = 1000;
@@ -74,5 +74,5 @@ end
 
 muscleLabel = signalData.EMGMuscleNames;
 emg_rest = preprocessedEMGs(1:120*new_fs, :);
-save('../data/processed/singleTrials_Rocky20220217_movave_50ms.mat', 'singleTrialData', 'muscleLabel', "emg_rest");
+save('../data/processed/singleTrials_Rocky20220303_movave_50ms.mat', 'singleTrialData', 'muscleLabel', "emg_rest");
 clear;

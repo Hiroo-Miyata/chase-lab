@@ -12,7 +12,7 @@ for i=(1:length(singleTrialData))
 end
 
 s = 0;
-MEG = zeros(801, 5, dataLength);
+EMG = zeros(801, 5, dataLength);
 directionArray = zeros(dataLength);
 rewardArray = zeros(dataLength);
 for i=(1:length(singleTrialData))
@@ -22,8 +22,8 @@ for i=(1:length(singleTrialData))
         s = s+1;
         GoCueTime = stateTransition(2, find(stateTransition(1, :)==4));
         % start: -200ms end: +600ms at GoCue
-        MEGaroundGoCue = singleTrialData(i).emg(GoCueTime-200:GoCueTime+600, :);
-        MEG(:,:, s) = MEGaroundGoCue;
+        EMGaroundGoCue = singleTrialData(i).emg(GoCueTime-200:GoCueTime+600, :);
+        EMG(:,:, s) = EMGaroundGoCue;
         directionArray(s) = singleTrialData(i).prop.direction;
         rewardArray(s) = singleTrialData(i).prop.reward;
     end
@@ -36,7 +36,7 @@ screenSize = [1 1 1200 900];
 for channel=(1:5)
     figure
     for direction=(1:8)
-        Y = MEG(:,channel,directionArray==direction);
+        Y = EMG(:,channel,directionArray==direction);
         plotY = reshape(Y, 801, []);
         subplot(3,3, plotPosition(direction));
         plot(X, plotY, 'Color', '#aaaaaa');
@@ -57,7 +57,7 @@ for channel=(1:5)
     for direction=(1:8)
         for reward=(1:4)
             condition = all([directionArray==direction; rewardArray==reward]); % get 0-1 array which fill both conditions
-            Y = MEG(:,channel, condition);
+            Y = EMG(:,channel, condition);
             plotY = reshape(Y,801,[]);
             subplot(3,3,plotPosition(direction));
             plot(X, mean(plotY, 2), 'Color', rewardColor(reward));
