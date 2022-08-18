@@ -1,5 +1,5 @@
 % 1. fetch trials from all data
-file = load('../data/processed/singleTrials_20220223_movave_50ms.mat');
+file = load('../data/processed/singleTrials_Rocky20220217_movave_50ms.mat');
 singleTrialData = file.singleTrialData;
 
 dataLength = 0;
