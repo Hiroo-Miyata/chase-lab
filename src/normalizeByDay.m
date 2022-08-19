@@ -1,15 +1,15 @@
-% 1. fetch trials from all data
-
+emg_channel = 5;
 files = ["0216", "0217", "0218", "0221", "0222", "0223", "0224", "0225", "0228", "0301", "0302", "0303"]; %!!!!!!!!!!!
 
 EMGAcrossDays = zeros(5, 0);
 baselines = zeros(5, 0);
 endofTrialByDays = zeros(length(files)+1, 1);
 titles = {'Day1', 'Day2', 'Day3', 'Day4', 'Day5', 'Day6', 'Day7', 'Day8', 'Day9', 'Day10', 'Day11', 'Day12'};
-for t=(1:length(files))
+means = zeros(length(files), emg_channel);
+stds = zeros(length(files), emg_channel);
+for t=(1:length(files)) %(1:length(files)
     file = load('../data/processed/singleTrials_Rocky2022'+files(t)+'_movave_50ms.mat');
     singleTrialData = file.singleTrialData;
-    emg_channel = 5;
     
     dataLength = 0;
     for i=(1:length(singleTrialData))
@@ -43,21 +43,32 @@ for t=(1:length(files))
     emgRest = file.emg_rest; % 120s * channel
     baseline = zeros(size(meanEMGEachTrial)) + reshape(mean(emgRest, 1), 5, []);
     baselines = [baselines baseline];
+    means(t, :) = mean(meanEMGEachTrial, 2);
+    stds(t, :) = std(meanEMGEachTrial, 0, 2);
 end
 
-for c=(1:5) % !!!!!!!!!
-    figure
-    plotMeanEMG = plot(EMGAcrossDays(c, :), 'b');
-    hold on;
-    plotBaseline = plot(baselines(c, :), ':', 'Color', 'r', 'LineWidth', 1.5);
-    hold on;
-    plotXline = xline(endofTrialByDays(1:length(endofTrialByDays)-1), '-', titles, 'LineWidth', 1.5);
-    hold off;
-%     legend([plotMeanEMG plotBaseline], {'mean EMG at each trial', 'baseline noise at rest period'});
-    title('Mean EMG of ' + string(file.muscleLabel(c)) + ' around Go Cue (-200 ~ +600 ms)');
-    xlabel('Trials');
-    ylabel('Mean EMG (a.u)');
-end
+x=1:12;
+% for c=(1:1)
+%     figure
+%     scatter(means(:, c), stds(:, c));
+%     title('Mean and std of ' + string(file.muscleLabel(c)) + ' at each day');
+%     xlabel('Mean')
+%     ylabel('Standard')
+% end
+
+% for c=(1:5) % !!!!!!!!!
+%     figure
+%     plotMeanEMG = plot(EMGAcrossDays(c, :), 'b');
+%     hold on;
+%     plotBaseline = plot(baselines(c, :), ':', 'Color', 'r', 'LineWidth', 1.5);
+%     hold on;
+%     plotXline = xline(endofTrialByDays(1:length(endofTrialByDays)-1), '-', titles, 'LineWidth', 1.5);
+%     hold off;
+% %     legend([plotMeanEMG plotBaseline], {'mean EMG at each trial', 'baseline noise at rest period'});
+%     title('Mean EMG of ' + string(file.muscleLabel(c)) + ' around Go Cue (-200 ~ +600 ms)');
+%     xlabel('Trials');
+%     ylabel('Mean EMG (a.u)');
+% end
 
 
 % for t=(1:length(files))
