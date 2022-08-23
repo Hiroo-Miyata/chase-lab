@@ -47,8 +47,8 @@ for t=(1:length(files)) %(1:length(files)
     baselines = [baselines baseline];
     means(t, :) = mean(meanEMGEachTrial, 2);
     stds(t, :) = std(meanEMGEachTrial, 0, 2);
-    tenDmetadataAcrossDays(9, :, t) = means(t,:);
-    tenDmetadataAcrossDays(10, :, t) = stds(t,:);
+    tenDmetadataAcrossDays(9, :, t) = mean(EMG(1:200, :, :), [1 3]); % mean at delay period
+    tenDmetadataAcrossDays(10, :, t) = means(t,:);
     for direction=(1:8)
         oneDirectionEMG = EMG(:,:,directionArray==direction);
         meanOneDirectionEMG = mean(oneDirectionEMG, 3);
@@ -58,14 +58,22 @@ for t=(1:length(files)) %(1:length(files)
 end
 
 % Trap normalization
-Y = reshape(tenDmetadataAcrossDays(:, 3, :), 10, []);
+channel = 5;
+Y = reshape(tenDmetadataAcrossDays(:, channel, :), 10, []);
 Ynorm = zeros(10, length(files));
 totalerror = zeros(length(files), 1);
 for t=(1:length(files))
-   alpha = sumsqr(Y(:, 2)) / sum(Y(:, 2).*Y(:, t));
-   Ynorm(:,t) = alpha*Y(:, t);
-   totalerror(t) = sumsqr(Y(:, 2) - Y(:, t));
+   covariance = cov(Y(:, 2), Y(:, t));
+   alpha = covariance(1,2) / var(Y(:, t));
+   beta = mean(Y(:, 2)) - alpha * mean(Y(:, t));
+   Ynorm(:,t) = alpha*Y(:, t) + beta;
+   totalerror(t) = sumsqr(Y(:, 2) - Ynorm(:, t));
 end
+
+plot(Y)
+title('raw '+string(file.muscleLabel(channel)));
+legend(titles);
+xticklabels({'0', '45', '90', '135', '180', '225', '270', '325', 'hold', 'mean'});
 
 
 % for channel=(5:5)
