@@ -58,13 +58,11 @@ for t=(1:length(files)) %(1:length(files)
 end
 
 % Trap normalization
-Y = reshape(tenDmetadataAcrossDays(:, 3, :), 10, []);
+Y = reshape(tenDmetadataAcrossDays(:, 1, :), 10, []);
 Ynorm = zeros(10, length(files));
-totalerror = zeros(length(files), 1);
 for t=(1:length(files))
-   alpha = sumsqr(Y(:, 2)) / sum(Y(:, 2).*Y(:, t));
-   Ynorm(:,t) = alpha*Y(:, t);
-   totalerror(t) = sumsqr(Y(:, 2) - Y(:, t));
+   alpha = sumsqr(Y(:, 2)) / sum(Y(:, 2)*Y(:, t));
+   Ynorm(:,t) = alpha*;
 end
 
 
