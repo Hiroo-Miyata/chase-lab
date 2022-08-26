@@ -7,7 +7,7 @@ files = ["0216", "0217", "0218", "0221", "0222", "0223", "0224", "0225", "0228",
 %
 %
 tenDmetadataIdeal = zeros(10, emg_channel);
-file = load('../data/processed/singleTrials_Rocky20220217_movave_50ms.mat');
+file = load('../data/processed/singleTrials_Rocky20220218_movave_50ms.mat');
 singleTrialData = file.singleTrialData;
 
 dataLength = 0;
@@ -55,6 +55,8 @@ titles = {'Day1', 'Day2', 'Day3', 'Day4', 'Day5', 'Day6', 'Day7', 'Day8', 'Day9'
 means = zeros(length(files), emg_channel);
 stds = zeros(length(files), emg_channel);
 normalizedParams = zeros(2, emg_channel, length(files));
+tenDmetadataAcrossDays = zeros(10, emg_channel, length(fi))
+
 
 %
 %
@@ -119,50 +121,8 @@ for t=(1:length(files)) %(1:length(files)
     % normalize EMG data
 %     means(t, :) = mean(meanEMGEachTrial, 2);
 %     stds(t, :) = std(meanEMGEachTrial, 0, 2);
-
     normalizedEMG = normalizedParams(1, :, t).' .* meanEMGEachTrial + normalizedParams(2, :, t).' .* ones(size(meanEMGEachTrial));
-%     EMGAcrossDays = [EMGAcrossDays normalizedEMG];
-    EMGAcrossDays = [EMGAcrossDays meanEMGEachTrial];
+    EMGAcrossDays = [EMGAcrossDays normalizedEMG];
     normalizedBaseline = alpha * baseline + beta;
-%     baselines = [baselines normalizedBaseline];
-    baselines = [baselines baseline];
-end
-
-% plot(Y)
-% title('raw '+string(file.muscleLabel(channel)));
-% legend(titles);
-% xticklabels({'0', '45', '90', '135', '180', '225', '270', '325', 'hold', 'mean'});
-
-
-% for channel=(5:5)
-%     figure
-%     Y = reshape(tenDmetadataAcrossDays(:, channel, :), 10, []);
-%     plot(Y)
-%     title(file.muscleLabel(channel));
-%     legend(titles)
-% end
-
-
-
-% x=1:12;
-% for c=(1:1)
-%     figure
-%     scatter(means(:, c), stds(:, c));
-%     title('Mean and std of ' + string(file.muscleLabel(c)) + ' at each day');
-%     xlabel('Mean')
-%     ylabel('Standard')
-% end
-
- 
-for c=(2:2) % !!!!!!!!!
-    figure
-    plotMeanEMG = plot(EMGAcrossDays(c, :), 'b');
-    hold on;
-    plotXline = xline(endofTrialByDays(1:length(endofTrialByDays)-1), '-', titles, 'LineWidth', 1.5);
-    hold on;
-    plotyline = plot(baselines(c, :), 'r', ':', 'LineWidth', 1.5);
-    hold off;
-    title('Mean EMG of ' + string(file.muscleLabel(c)) + ' around Go Cue (-200 ~ +600 ms)');
-    xlabel('Trials');
-    ylabel('Mean EMG (a.u)');
+    baselines = [baselines normalizedBaseline];
 end
