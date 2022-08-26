@@ -121,9 +121,11 @@ for t=(1:length(files)) %(1:length(files)
 %     stds(t, :) = std(meanEMGEachTrial, 0, 2);
 
     normalizedEMG = normalizedParams(1, :, t).' .* meanEMGEachTrial + normalizedParams(2, :, t).' .* ones(size(meanEMGEachTrial));
-    EMGAcrossDays = [EMGAcrossDays normalizedEMG];
+%     EMGAcrossDays = [EMGAcrossDays normalizedEMG];
+    EMGAcrossDays = [EMGAcrossDays meanEMGEachTrial];
     normalizedBaseline = alpha * baseline + beta;
-    baselines = [baselines normalizedBaseline];
+%     baselines = [baselines normalizedBaseline];
+    baselines = [baselines baseline];
 end
 
 % plot(Y)
@@ -152,11 +154,13 @@ end
 % end
 
  
-for c=(2:2) % !!!!!!!!!
+for c=(1:5) % !!!!!!!!!
     figure
     plotMeanEMG = plot(EMGAcrossDays(c, :), 'b');
     hold on;
     plotXline = xline(endofTrialByDays(1:length(endofTrialByDays)-1), '-', titles, 'LineWidth', 1.5);
+    hold on;
+    plotyline = plot(baselines(c, :), 'r');
     hold off;
     title('Mean EMG of ' + string(file.muscleLabel(c)) + ' around Go Cue (-200 ~ +600 ms)');
     xlabel('Trials');
