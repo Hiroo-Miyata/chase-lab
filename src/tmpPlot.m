@@ -14,6 +14,15 @@
 % end
 % 
 
+for c=(3:3)
+    figure
+    Y = reshape(normalizedParams(:, c, :), 2, []);
+    scatter(Y(1, :), Y(2, :));
+    title(file.muscleLabel(c));
+    dx = 0.05; dy = 0.1; % displacement so the text does not overlay the data points
+    text(Y(1, :)+dx, Y(2, :)+dy, titles);
+end
+
 % x=1:12;
 % for c=(1:1)
 %     figure
