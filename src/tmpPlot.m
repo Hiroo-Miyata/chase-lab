@@ -4,24 +4,27 @@
 % legend(titles);
 % xticklabels({'0', '45', '90', '135', '180', '225', '270', '325', 'hold', 'mean'});
 
-% 
-% for channel=(3:3)
-%     figure
-%     Y = reshape(tenDmetadataAcrossDays(:, channel, 1:6), 10, []);
-%     plot(Y)
-%     title(file.muscleLabel(channel));
-%     legend(titles)
-% end
-% 
 
-for c=(3:3)
+for channel=(3:3)
     figure
-    Y = reshape(normalizedParams(:, c, :), 2, []);
-    scatter(Y(1, :), Y(2, :));
-    title(file.muscleLabel(c));
-    dx = 0.05; dy = 0.1; % displacement so the text does not overlay the data points
-    text(Y(1, :)+dx, Y(2, :)+dy, titles);
+    Y = reshape(tenDmetadataAcrossDays(:, channel, :), 9, []);
+    Y(:, 7:9) = [];
+    plot(Y)
+    title(file.muscleLabel(channel));
+    titles(7:9) = [];
+    legend(titles)
+    xticklabels({'0', '45', '90', '135', '180', '225', '270', '325', 'hold'});
 end
+
+% 
+% for c=(3:3)
+%     figure
+%     Y = reshape(normalizedParams(:, c, :), 2, []);
+%     scatter(Y(1, :), Y(2, :));
+%     title(file.muscleLabel(c));
+%     dx = 0.05; dy = 0.1; % displacement so the text does not overlay the data points
+%     text(Y(1, :)+dx, Y(2, :)+dy, titles);
+% end
 
 % x=1:12;
 % for c=(1:1)
