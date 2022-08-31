@@ -16,23 +16,32 @@
 %     xticklabels({'0', '45', '90', '135', '180', '225', '270', '325', 'hold'});
 % end
 
-for channel=(1:5)
+for channel=(5:5)
     Y = zeros(8,4);
+    Yerror = zeros(8,4);
+    datapoint = zeros(8,4);
     for reward=(1:4)
         for direction=(1:8)
             condition = all([directionArray==direction; rewardArray==reward]);
             tmpEMG = normalizedEMGAcrossDays(50:250, channel, condition);
             meanOneDirectionEMG = mean(tmpEMG, 3);
             MaxIntensitysAtOneDirection = mean(meanOneDirectionEMG);
+            standardError = std(meanOneDirectionEMG) / sqrt(size(tmpEMG, 3));
             Y(direction, reward) = MaxIntensitysAtOneDirection;
-            % add errorbar visualize standard error of mean
+            Yerror(direction, reward) = standardError;
+            datapoint(direction, reward) = size(tmpEMG, 3);
         end
     end
     figure
-    plot(Y,'linewidth',2);
-    rewColors = {[1 0 0],[1 0.6470 0],[0 0 1],[0 0 0]};
+    errorbar(Y, Yerror,'linewidth',2);
     title(muscleLabel(channel));
     legend(["Small", "Medium", "Large", "Jackpot"])
+    rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
+    colororder(rewColors);
+    set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+    xticks([1 2 3 4 5 6 7 8]);
+    xticklabels({'0', '45', '90', '135', '180', '225', '270', '325'});
+    xlim([0.5 8.5]);
 end
 
 % 
