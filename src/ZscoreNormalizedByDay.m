@@ -85,7 +85,10 @@ end
 % save data
 %
 %
-EMGAcrossDays = zeros(801, emg_channel, 0);
+normalizedEMGAcrossDays = zeros(801, emg_channel, 0);
+directionAcrossDays = zeros(0);
+rewardAcrossDays = zeros(0);
+datapointEachDay = zeros(length(files));
 for t=(1:length(files))
     file = load('../data/processed/singleTrials_Rocky2022'+files(t)+'_movave_50ms.mat');
     singleTrialData = file.singleTrialData;
@@ -120,5 +123,11 @@ for t=(1:length(files))
         normalizedEMGEachMuscle = (reshape(EMG(:, channel, :), 801, []) - normalizedParams(1, channel, t)) ./ normalizedParams(2, channel, t);
         normalizedEMG(:, channel, :) = normalizedEMGEachMuscle;
     end
-    EMGAcrossDays = cat(3, EMGAcrossDays, normalizedEMG);
+    normalizedEMGAcrossDays = cat(3, normalizedEMGAcrossDays, normalizedEMG);
+    directionAcrossDays = [directionAcrossDays directionArray];
+    rewardAcrossDays = [rewardAcrossDays rewardArray];
+    datapointEachDay(t) = size(normalizedEMG, 3);
 end
+
+muscleLabel = file.muscleLabel;
+% save('../data/normalized/Rocky20220216to0303_movave_50ms.mat', 'normalizedEMGAcrossDays', 'directionAcrossDays', 'rewardAcrossDays', "datapointEachDay", "muscleLabel");

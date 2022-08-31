@@ -5,15 +5,34 @@
 % xticklabels({'0', '45', '90', '135', '180', '225', '270', '325', 'hold', 'mean'});
 
 
-for channel=(3:3)
+% for channel=(3:3)
+%     figure
+%     Y = reshape(tenDmetadataAcrossDays(:, channel, :), 9, []);
+%     Y(:, 7:9) = [];
+%     plot(Y)
+%     title(file.muscleLabel(channel));
+%     titles(7:9) = [];
+%     legend(titles)
+%     xticklabels({'0', '45', '90', '135', '180', '225', '270', '325', 'hold'});
+% end
+
+for channel=(1:5)
+    Y = zeros(8,4);
+    for reward=(1:4)
+        for direction=(1:8)
+            condition = all([directionArray==direction; rewardArray==reward]);
+            tmpEMG = normalizedEMGAcrossDays(50:250, channel, condition);
+            meanOneDirectionEMG = mean(tmpEMG, 3);
+            MaxIntensitysAtOneDirection = mean(meanOneDirectionEMG);
+            Y(direction, reward) = MaxIntensitysAtOneDirection;
+            % add errorbar visualize standard error of mean
+        end
+    end
     figure
-    Y = reshape(tenDmetadataAcrossDays(:, channel, :), 9, []);
-    Y(:, 7:9) = [];
-    plot(Y)
-    title(file.muscleLabel(channel));
-    titles(7:9) = [];
-    legend(titles)
-    xticklabels({'0', '45', '90', '135', '180', '225', '270', '325', 'hold'});
+    plot(Y,'linewidth',2);
+    rewColors = {[1 0 0],[1 0.6470 0],[0 0 1],[0 0 0]};
+    title(muscleLabel(channel));
+    legend(["Small", "Medium", "Large", "Jackpot"])
 end
 
 % 
