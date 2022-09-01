@@ -1,31 +1,51 @@
 
-% plot(Y)
-% title('raw '+string(file.muscleLabel(channel)));
-% legend(titles);
-% xticklabels({'0', '45', '90', '135', '180', '225', '270', '325', 'hold', 'mean'});
 
+%
+% coefficient of variation across days
+%
+figure
+for channel=(1:5)
+    titles = {'Day1', 'Day2', 'Day3', 'Day4', 'Day5', 'Day6', 'Day7', 'Day8', 'Day9', 'Day10', 'Day11', 'Day12'};
+    Y = normalizedParams(2, channel, :) ./ normalizedParams(1, channel, :);
+    Y = reshape(Y, 1, []);
+    if file.muscleLabel(channel) == "Tric"
+        Y(5:9) = [];
+        titles(5:9) = [];
+    elseif file.muscleLabel(channel) == "Trap"
+        Y(1) = [];
+        titles(1) = [];
+    elseif file.muscleLabel(channel) == "LBic" || file.muscleLabel(channel) == "PDel"
+        Y(9) = [];
+        titles(9) = [];
+    end
+    plot(Y,'linewidth',2)
+    hold on
+end
+legend(file.muscleLabel)
+set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+hold off
 
-% for channel=(3:3)
+% 
+% z-indexed 9 datapoint metadata
+% 
+% for channel=(1:5)
+%     titles = {'Day1', 'Day2', 'Day3', 'Day4', 'Day5', 'Day6', 'Day7', 'Day8', 'Day9', 'Day10', 'Day11', 'Day12'};
 %     figure
 %     Y = reshape(tenDmetadataAcrossDays(:, channel, :), 9, []);
-%     Y(:, 7:9) = [];
+%     if file.muscleLabel(channel) == "Tric"
+%         Y(:, 5:9) = [];
+%         titles(5:9) = [];
+%     elseif file.muscleLabel(channel) == "Trap"
+%         Y(:, 1) = [];
+%         titles(1) = [];
+%     elseif file.muscleLabel(channel) == "LBic" || file.muscleLabel(channel) == "PDel"
+%         Y(:, 9) = [];
+%         titles(9) = [];
+%     end
 %     plot(Y)
 %     title(file.muscleLabel(channel));
-%     titles(7:9) = [];
 %     legend(titles)
 %     xticklabels({'0', '45', '90', '135', '180', '225', '270', '325', 'hold'});
-% end
-
-% channel=1;direction=2;
-% for reward=(1:4)
-%     condition = all([directionAcrossDays==direction; rewardAcrossDays==reward]);
-%     tmpEMG = normalizedEMGAcrossDays(:, channel, condition);
-%     meanOneDirectionEMG = mean(tmpEMG, 3);
-%     MaxIntensitysAtOneDirection = mean(meanOneDirectionEMG);
-%     standardError = std(meanOneDirectionEMG) / sqrt(size(tmpEMG, 3));
-%     
-%     figure
-%     plot(mean(tmpEMG, 3));
 % end
 
 
@@ -59,34 +79,34 @@
 % 
 % EMG tuning curve at holding time as a function of reward and direction 
 % 
-for channel=(1:5)
-    emg = exceptionRemovedEMG.emg(channel);
-    Y = zeros(8,4);
-    Yerror = zeros(8,4);
-    datapoint = zeros(8,4);
-    for reward=(1:4)
-        for direction=(1:8)
-            condition = all([emg.directionArray==direction; emg.rewardArray==reward]);
-            tmpEMG = emg.signal(50:250, condition);
-            meanOneDirectionEMG = mean(tmpEMG, 2);
-            MaxIntensitysAtOneDirection = mean(meanOneDirectionEMG);
-            standardError = std(meanOneDirectionEMG) / sqrt(size(tmpEMG, 2));
-            Y(direction, reward) = MaxIntensitysAtOneDirection;
-            Yerror(direction, reward) = standardError;
-            datapoint(direction, reward) = size(tmpEMG, 2);
-        end
-    end
-    figure
-    errorbar(Y, Yerror,'linewidth',2);
-    title(muscleLabel(channel));
-    legend(["Small", "Medium", "Large", "Jackpot"])
-    rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
-    colororder(rewColors);
-    set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
-    xticks([1 2 3 4 5 6 7 8]);
-    xticklabels({'0', '45', '90', '135', '180', '225', '270', '325'});
-    xlim([0.5 8.5]);
-end
+% for channel=(1:1)
+%     emg = exceptionRemovedEMG.emg(channel);
+%     Y = zeros(8,4);
+%     Yerror = zeros(8,4);
+%     datapoint = zeros(8,4);
+%     for reward=(1:4)
+%         for direction=(1:8)
+%             condition = all([emg.directionArray==direction; emg.rewardArray==reward]);
+%             tmpEMG = emg.signal(50:250, condition);
+%             meanOneDirectionEMG = mean(tmpEMG, 2);
+%             MaxIntensitysAtOneDirection = mean(meanOneDirectionEMG);
+%             standardError = std(meanOneDirectionEMG) / sqrt(size(tmpEMG, 2));
+%             Y(direction, reward) = MaxIntensitysAtOneDirection;
+%             Yerror(direction, reward) = standardError;
+%             datapoint(direction, reward) = size(tmpEMG, 2);
+%         end
+%     end
+%     figure
+%     errorbar(Y, Yerror,'linewidth',2);
+%     title(muscleLabel(channel));
+%     legend(["Small", "Medium", "Large", "Jackpot"])
+%     rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
+%     colororder(rewColors);
+%     set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+%     xticks([1 2 3 4 5 6 7 8]);
+%     xticklabels({'0', '45', '90', '135', '180', '225', '270', '325'});
+%     xlim([0.5 8.5]);
+% end
 
 % 
 % for c=(3:3)
