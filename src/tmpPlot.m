@@ -16,20 +16,64 @@
 %     xticklabels({'0', '45', '90', '135', '180', '225', '270', '325', 'hold'});
 % end
 
-for channel=(5:5)
+% channel=1;direction=2;
+% for reward=(1:4)
+%     condition = all([directionAcrossDays==direction; rewardAcrossDays==reward]);
+%     tmpEMG = normalizedEMGAcrossDays(:, channel, condition);
+%     meanOneDirectionEMG = mean(tmpEMG, 3);
+%     MaxIntensitysAtOneDirection = mean(meanOneDirectionEMG);
+%     standardError = std(meanOneDirectionEMG) / sqrt(size(tmpEMG, 3));
+%     
+%     figure
+%     plot(mean(tmpEMG, 3));
+% end
+
+
+% 
+% Mean EMG at holding time as a function of reward  
+% 
+% for channel=(1:5)
+%     Y = zeros(1,4);
+%     Yerror = zeros(1,4);
+%     datapoint = zeros(1,4);
+%     for reward=(1:4)
+%         tmpEMG = normalizedEMGAcrossDays(50:250, channel, rewardAcrossDays==reward);
+%         meanOneDirectionEMG = mean(tmpEMG, 3);
+%         MaxIntensitysAtOneDirection = mean(meanOneDirectionEMG);
+%         standardError = std(meanOneDirectionEMG) / sqrt(size(tmpEMG, 3));
+%         Y(reward) = MaxIntensitysAtOneDirection;
+%         Yerror(reward) = standardError;
+%         datapoint(reward) = size(tmpEMG, 3);
+%     end
+%     figure
+%     errorbar([1 2 3 4],Y, Yerror,'linewidth',2);
+%     title(muscleLabel(channel));
+%     xticks([1 2 3 4]);
+%     xticklabels(["Small", "Medium", "Large", "Jackpot"]);
+% %     rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
+% %     colororder(rewColors);
+%     set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+% end
+
+
+% 
+% EMG tuning curve at holding time as a function of reward and direction 
+% 
+for channel=(1:5)
+    emg = exceptionRemovedEMG.emg(channel);
     Y = zeros(8,4);
     Yerror = zeros(8,4);
     datapoint = zeros(8,4);
     for reward=(1:4)
         for direction=(1:8)
-            condition = all([directionArray==direction; rewardArray==reward]);
-            tmpEMG = normalizedEMGAcrossDays(50:250, channel, condition);
-            meanOneDirectionEMG = mean(tmpEMG, 3);
+            condition = all([emg.directionArray==direction; emg.rewardArray==reward]);
+            tmpEMG = emg.signal(50:250, condition);
+            meanOneDirectionEMG = mean(tmpEMG, 2);
             MaxIntensitysAtOneDirection = mean(meanOneDirectionEMG);
-            standardError = std(meanOneDirectionEMG) / sqrt(size(tmpEMG, 3));
+            standardError = std(meanOneDirectionEMG) / sqrt(size(tmpEMG, 2));
             Y(direction, reward) = MaxIntensitysAtOneDirection;
             Yerror(direction, reward) = standardError;
-            datapoint(direction, reward) = size(tmpEMG, 3);
+            datapoint(direction, reward) = size(tmpEMG, 2);
         end
     end
     figure

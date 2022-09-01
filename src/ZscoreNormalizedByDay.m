@@ -88,7 +88,7 @@ end
 normalizedEMGAcrossDays = zeros(801, emg_channel, 0);
 directionAcrossDays = zeros(0);
 rewardAcrossDays = zeros(0);
-datapointEachDay = zeros(length(files));
+datapointEachDay = zeros(size(files));
 for t=(1:length(files))
     file = load('../data/processed/singleTrials_Rocky2022'+files(t)+'_movave_50ms.mat');
     singleTrialData = file.singleTrialData;
@@ -126,8 +126,40 @@ for t=(1:length(files))
     normalizedEMGAcrossDays = cat(3, normalizedEMGAcrossDays, normalizedEMG);
     directionAcrossDays = [directionAcrossDays directionArray];
     rewardAcrossDays = [rewardAcrossDays rewardArray];
-    datapointEachDay(t) = size(normalizedEMG, 3);
+    if t == 1
+        datapointEachDay(t) = size(normalizedEMG, 3);
+    else
+        datapointEachDay(t) = size(normalizedEMG, 3) + datapointEachDay(t-1);
+    end 
 end
 
 muscleLabel = file.muscleLabel;
 % save('../data/normalized/Rocky20220216to0303_movave_50ms.mat', 'normalizedEMGAcrossDays', 'directionAcrossDays', 'rewardAcrossDays', "datapointEachDay", "muscleLabel");
+
+exceptionRemovedEMG = struct;
+exceptionRemovedEMG.emg = struct.empty(0);
+
+for channel=(1:emg_channel)
+    exceptionRemovedEMG.emg(channel).name=muscleLabel(channel);
+    exceptionRemovedEMG.emg(channel).signal = reshape(normalizedEMGAcrossDays(:, channel, :), size(normalizedEMGAcrossDays,1), []);
+    exceptionRemovedEMG.emg(channel).directionArray = directionAcrossDays;
+    exceptionRemovedEMG.emg(channel).rewardArray = rewardAcrossDays;
+
+    if muscleLabel(channel) == "Trap"
+        exceptionRemovedEMG.emg(channel).signal(:,1:datapointEachDay(1)) = [];
+        exceptionRemovedEMG.emg(channel).directionArray(:,1:datapointEachDay(1)) = [];
+        exceptionRemovedEMG.emg(channel).rewardArray(:,1:datapointEachDay(1)) = [];
+    elseif muscleLabel(channel) == "Tric"
+        exceptionRemovedEMG.emg(channel).signal(:,datapointEachDay(5)+1:datapointEachDay(9)) = [];
+        exceptionRemovedEMG.emg(channel).directionArray(:,datapointEachDay(5)+1:datapointEachDay(9)) = [];
+        exceptionRemovedEMG.emg(channel).rewardArray(:,datapointEachDay(5)+1:datapointEachDay(9)) = [];
+    elseif muscleLabel(channel) == "LBic"
+        exceptionRemovedEMG.emg(channel).signal(:,datapointEachDay(8)+1:datapointEachDay(9)) = [];
+        exceptionRemovedEMG.emg(channel).directionArray(:,datapointEachDay(8)+1:datapointEachDay(9)) = [];
+        exceptionRemovedEMG.emg(channel).rewardArray(:,datapointEachDay(8)+1:datapointEachDay(9)) = [];
+    elseif muscleLabel(channel) == "PDel"
+        exceptionRemovedEMG.emg(channel).signal(:,datapointEachDay(8)+1:datapointEachDay(9)) = [];
+        exceptionRemovedEMG.emg(channel).directionArray(:,datapointEachDay(8)+1:datapointEachDay(9)) = [];
+        exceptionRemovedEMG.emg(channel).rewardArray(:,datapointEachDay(8)+1:datapointEachDay(9)) = [];
+    end
+end
