@@ -1,25 +1,66 @@
 % load('../data/normalized/Rocky20220216to0303_ma50ms_successesOnly.mat');
 
-movement = exceptionRemovedEMG.data.kinematics.integratedVelosities; % 801 * N
+movement = exceptionRemovedEMG.data.kinematics.integratedVelosities; % timewindow * N
 [maxVelosityMagnitudes, maxVelosityIndexs] = max(movement, [], 1); % should be 1*N
 
-over800 = zeros(1,size(movement, 2), 'logical');
+normals = zeros(1,size(movement, 2), 'logical');
 for i=(1:length(maxVelosityIndexs))
-    if maxVelosityIndexs(i) > 700
-        if maxVelosityIndexs(i) < 800
-            over800(i) = 1;
+    if maxVelosityIndexs(i) > 300+200
+        if maxVelosityIndexs(i) < 300+500
+            normals(i) = 1;
         end
     end
 end
 
-Y = movement(:, over800);
-figure
-plot(Y, "Color", [0.7 0.7 0.7])
-set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
-hold on
-plot(mean(Y, 2), "Color", [0 0 0])
-hold off
-% histogram(maxVelosityIndexs)
+
+%
+% visualize mean EMG around velocity peak value
+%
+datapoint = zeros(8,4,5);
+for channel=(1:5) %1:length(exceptionRemovedEMG.data.emgs)
+    data = exceptionRemovedEMG.data;
+    emg = exceptionRemovedEMG.data.emgs(channel);
+
+    Y = zeros(8,4);
+    Yerror = zeros(8,4);
+    for reward=(1:4)
+        for direction=(1:8)
+            condition = all([data.directions==direction; data.rewards==reward; normals; emg.exceptions]);
+            maxVelosityIndexsConditioned = maxVelosityIndexs(condition);
+            EMGtmp = emg.signals(:, condition);
+            EMGAroundPeak = zeros(1, size(EMGtmp, 2));
+            for i=(1:length(maxVelosityIndexsConditioned))
+                maxVIdx = maxVelosityIndexsConditioned(i);
+                EMGAroundPeak(i) = mean(EMGtmp(maxVIdx-100:maxVIdx+100, i));
+            end
+            MeanIntensitysAtOneDirection = mean(EMGAroundPeak);
+            standardError = std(EMGAroundPeak) / sqrt(length(EMGAroundPeak));
+            Y(direction, reward) = MeanIntensitysAtOneDirection;
+            Yerror(direction, reward) = standardError;
+            datapoint(direction, reward, channel) = size(EMGtmp, 2);
+        end
+    end
+    figure
+    errorbar(Y, Yerror,'linewidth',2);
+    title(emg.name);
+    legend(["Small", "Medium", "Large", "Jackpot"])
+    rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
+    colororder(rewColors);
+    set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+    xticks([1 2 3 4 5 6 7 8]);
+    xticklabels({'0', '45', '90', '135', '180', '225', '270', '325'});
+    xlim([0.5 8.5]);
+end
+
+% Y = movement(:, normals);
+% figure
+% plot(Y, "Color", [0.7 0.7 0.7]);
+% set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+% hold on
+% plot(mean(Y, 2), "Color", [0 0 0])
+% hold off
+% histogram(maxVelosityMagnitudes(normals))
+% title("Histogram of maxVelosityMagnitudes for each trial")
 
 %
 % coefficient of variation across days
@@ -78,13 +119,13 @@ hold off
 %     Yerror = zeros(1,4);
 %     datapoint = zeros(1,4);
 %     for reward=(1:4)
-%         tmpEMG = normalizedEMGAcrossDays(50:250, channel, rewardAcrossDays==reward);
-%         meanOneDirectionEMG = mean(tmpEMG, 3);
+%         EMGtmp = normalizedEMGAcrossDays(50:250, channel, rewardAcrossDays==reward);
+%         meanOneDirectionEMG = mean(EMGtmp, 3);
 %         MaxIntensitysAtOneDirection = mean(meanOneDirectionEMG);
-%         standardError = std(meanOneDirectionEMG) / sqrt(size(tmpEMG, 3));
+%         standardError = std(meanOneDirectionEMG) / sqrt(size(EMGtmp, 3));
 %         Y(reward) = MaxIntensitysAtOneDirection;
 %         Yerror(reward) = standardError;
-%         datapoint(reward) = size(tmpEMG, 3);
+%         datapoint(reward) = size(EMGtmp, 3);
 %     end
 %     figure
 %     errorbar([1 2 3 4],Y, Yerror,'linewidth',2);
@@ -108,13 +149,13 @@ hold off
 %     for reward=(1:4)
 %         for direction=(1:8)
 %             condition = all([emg.directionArray==direction; emg.rewardArray==reward]);
-%             tmpEMG = emg.signal(50:250, condition);
-%             meanOneDirectionEMG = mean(tmpEMG, 2);
+%             EMGtmp = emg.signal(50:250, condition);
+%             meanOneDirectionEMG = mean(EMGtmp, 2);
 %             MaxIntensitysAtOneDirection = mean(meanOneDirectionEMG);
-%             standardError = std(meanOneDirectionEMG) / sqrt(size(tmpEMG, 2));
+%             standardError = std(meanOneDirectionEMG) / sqrt(size(EMGtmp, 2));
 %             Y(direction, reward) = MaxIntensitysAtOneDirection;
 %             Yerror(direction, reward) = standardError;
-%             datapoint(direction, reward) = size(tmpEMG, 2);
+%             datapoint(direction, reward) = size(EMGtmp, 2);
 %         end
 %     end
 %     figure

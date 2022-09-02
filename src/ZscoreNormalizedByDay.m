@@ -82,11 +82,12 @@ end
 % prepare variables for save data
 %
 %
-normalizedEMGAcrossDays = zeros(801, emg_channel, 0);
+timewindow = 901;
+normalizedEMGAcrossDays = zeros(timewindow, emg_channel, 0);
 directionAcrossDays = zeros(0);
 rewardAcrossDays = zeros(0);
 datapointEachDay = zeros(size(files));
-integratedVelositesAcrossDays = zeros(801, 0);
+integratedVelositesAcrossDays = zeros(timewindow, 0);
 transitionTimeAcrossDays = zeros(2, 5, 0);
 %
 %
@@ -106,10 +107,10 @@ for t=(1:length(files)) %(1:length(files)
     end
     
     s = 0;
-    EMG = zeros(801, emg_channel, dataLength);
+    EMG = zeros(timewindow, emg_channel, dataLength);
     directionArray = zeros(1, dataLength);
     rewardArray = zeros(1, dataLength);
-    integratedVelosityArray = zeros(801, dataLength);
+    integratedVelosityArray = zeros(timewindow, dataLength);
     transitionTime = zeros(2, 5, dataLength);
     for i=(1:length(singleTrialData))
         stateTransition = singleTrialData(i).prop.stateTransition;
@@ -117,7 +118,7 @@ for t=(1:length(files)) %(1:length(files)
             s = s+1;
             GoCueTime = stateTransition(2, find(stateTransition(1, :)==4));
             % start: -200ms end: +600ms at GoCue
-            EMGaroundGoCue = singleTrialData(i).emg(GoCueTime-200:GoCueTime+600, :);
+            EMGaroundGoCue = singleTrialData(i).emg(GoCueTime-200:GoCueTime+timewindow-201, :);
             EMG(:,:, s) = EMGaroundGoCue;
             directionArray(s) = singleTrialData(i).prop.direction;
             rewardArray(s) = singleTrialData(i).prop.reward;
@@ -126,7 +127,7 @@ for t=(1:length(files)) %(1:length(files)
             movementStartTime = find(singleTrialData(i).timeInTrial == GoCueTime);
 %             TargetOnsetTime = stateTransition(2, find(stateTransition(1, :)==6));
 %             movementEndTime = find(singleTrialData(i).timeInTrial == TargetOnsetTime);
-            velosityEachTrails = singleTrialData(i).handKinematics.velocity(movementStartTime-200:movementStartTime+600, :);
+            velosityEachTrails = singleTrialData(i).handKinematics.velocity(movementStartTime-200:movementStartTime+timewindow-201, :);
             integratedVelosityArray(:, s) = rssq(velosityEachTrails, 2);
             transitionTime(:, :, s) = stateTransition(:, find(stateTransition(1, :)==3):find(stateTransition(1, :)==3)+4);
         end
@@ -135,7 +136,7 @@ for t=(1:length(files)) %(1:length(files)
     % for save normalize EMG data
     normalizedEMG = zeros(size(EMG));
     for channel=(1:emg_channel)
-        normalizedEMGEachMuscle = (reshape(EMG(:, channel, :), 801, []) - normalizedParams(1, channel, t)) ./ normalizedParams(2, channel, t);
+        normalizedEMGEachMuscle = (reshape(EMG(:, channel, :), timewindow, []) - normalizedParams(1, channel, t)) ./ normalizedParams(2, channel, t);
         normalizedEMG(:, channel, :) = normalizedEMGEachMuscle;
     end
     normalizedEMGAcrossDays = cat(3, normalizedEMGAcrossDays, normalizedEMG);
@@ -178,3 +179,4 @@ for channel=(1:emg_channel)
 end
 
 clearvars -except exceptionRemovedEMG
+% save('../data/normalized/Rocky20220216to0303_ma50ms_successesOnly.mat', "exceptionRemovedEMG");
