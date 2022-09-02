@@ -101,7 +101,7 @@ for t=(1:length(files)) %(1:length(files)
     dataLength = 0;
     for i=(1:length(singleTrialData))
         stateTransition = singleTrialData(i).prop.stateTransition;
-        if all(ismember([3 4 5 6], stateTransition(1,:))) == 1
+        if all(ismember([3 4 5 12], stateTransition(1,:))) == 1
             dataLength + dataLength + 1;
         end
     end
@@ -114,7 +114,7 @@ for t=(1:length(files)) %(1:length(files)
     transitionTime = zeros(2, 5, dataLength);
     for i=(1:length(singleTrialData))
         stateTransition = singleTrialData(i).prop.stateTransition;
-        if all(ismember([3 4 5 6], stateTransition(1,:))) == 1
+        if all(ismember([3 4 5 12], stateTransition(1,:))) == 1
             s = s+1;
             GoCueTime = stateTransition(2, find(stateTransition(1, :)==4));
             % start: -200ms end: +600ms at GoCue
@@ -179,4 +179,4 @@ for channel=(1:emg_channel)
 end
 
 clearvars -except exceptionRemovedEMG
-% save('../data/normalized/Rocky20220216to0303_ma50ms_successesOnly.mat', "exceptionRemovedEMG");
+save('../data/normalized/Rocky20220216to0303_ma50ms_undershoot.mat', "exceptionRemovedEMG");
