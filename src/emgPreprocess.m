@@ -1,4 +1,4 @@
-alldata = load("../data/synchronized/Rocky20220303_Trials9_1260_behaviorProcessed_20220815_103412.mat");
+alldata = load("../data/synchronized/Rocky20220216_Trials10_1080_behaviorProcessed_20220815_101507.mat");
 signalData = alldata.analogData;
 fs = 10000;
 new_fs = 1000;
@@ -64,7 +64,7 @@ singleTrialData = struct.empty(0);
 for t=(1:length(alldata.trialData)-1)
     trialData = alldata.trialData(t);
     startTime = ceil((trialData.taskSynchTrialTime-zerotime)*1000);
-    endTime = ceil((alldata.trialData(t+1).taskSynchTrialTime-zerotime)*1000);
+    endTime = ceil((trialData.taskSynchTrialTime-zerotime)*1000 + max(trialData.time));
     singleTrialData(t).emg = preprocessedEMGs(startTime:endTime, :);
     singleTrialData(t).prop.result = trialData.trialStatus;
     singleTrialData(t).prop.direction = trialData.directionLabel;
@@ -73,8 +73,9 @@ for t=(1:length(alldata.trialData)-1)
     singleTrialData(t).prop.endTarget = trialData.reachTarget;
     singleTrialData(t).prop.stateTransition = trialData.stateTable;
     singleTrialData(t).handKinematics = trialData.handKinematics;
+    singleTrialData(t).timeInTrial = trialData.time;
 end
 
 emg_rest = preprocessedEMGs(1:120*new_fs, :);
-save('../data/processed/singleTrials_Rocky20220303_movave_50ms.mat', 'singleTrialData', 'muscleLabel', "emg_rest");
+save('../data/processed/singleTrials_Rocky20220216_movave_50ms.mat', 'singleTrialData', 'muscleLabel', "emg_rest");
 clear;

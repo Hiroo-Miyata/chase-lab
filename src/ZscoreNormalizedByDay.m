@@ -3,7 +3,7 @@ files = ["0216", "0217", "0218", "0221", "0222", "0223", "0224", "0225", "0228",
 
 %
 %
-% prepare visualization variables
+% prepare variables for visualization
 %
 %
 meanEMGAcrossDays = zeros(5, 0);
@@ -34,11 +34,11 @@ for t=(1:length(files)) %(1:length(files)
     
     s = 0;
     EMG = zeros(801, emg_channel, dataLength);
-    directionArray = zeros(dataLength);
-    rewardArray = zeros(dataLength);
+    directionArray = zeros(1, dataLength);
+    rewardArray = zeros(1, dataLength);
     for i=(1:length(singleTrialData))
         stateTransition = singleTrialData(i).prop.stateTransition;
-        if all(ismember([3 4 5 6 7], stateTransition(1,:))) == 1
+        if all(ismember([3 4 5 6], stateTransition(1,:))) == 1
             s = s+1;
             GoCueTime = stateTransition(2, find(stateTransition(1, :)==4));
             % start: -200ms end: +600ms at GoCue
@@ -72,24 +72,28 @@ for t=(1:length(files)) %(1:length(files)
         tenDmetadataAcrossDays(:, channel, t) = (Y - Ymean) ./ Ystd;
     end
 
-    % normalize EMG data
-%     means(t, :) = mean(meanEMGEachTrial, 2);
-%     stds(t, :) = std(meanEMGEachTrial, 0, 2);
+    % for visualize normalize EMG data
     normalizedMeanEMG = (meanEMGEachTrial - normalizedParams(1, :, t).') ./ normalizedParams(2, :, t).';
-    meanEMGAcrossDays = [meanEMGAcrossDays normalizedMeanEMG];
+    meanEMGAcrossDays = cat(2, meanEMGAcrossDays, normalizedMeanEMG);
 end
 
-
 %
 %
-% save data
+% prepare variables for save data
 %
 %
 normalizedEMGAcrossDays = zeros(801, emg_channel, 0);
 directionAcrossDays = zeros(0);
 rewardAcrossDays = zeros(0);
 datapointEachDay = zeros(size(files));
-for t=(1:length(files))
+integratedVelositesAcrossDays = zeros(801, 0);
+transitionTimeAcrossDays = zeros(2, 5, 0);
+%
+%
+% normalize successes and failures (Be careful! it is different from previous code!!!)
+%
+%
+for t=(1:length(files)) %(1:length(files)
     file = load('../data/processed/singleTrials_Rocky2022'+files(t)+'_movave_50ms.mat');
     singleTrialData = file.singleTrialData;
     
@@ -103,8 +107,10 @@ for t=(1:length(files))
     
     s = 0;
     EMG = zeros(801, emg_channel, dataLength);
-    directionArray = zeros(dataLength);
-    rewardArray = zeros(dataLength);
+    directionArray = zeros(1, dataLength);
+    rewardArray = zeros(1, dataLength);
+    integratedVelosityArray = zeros(801, dataLength);
+    transitionTime = zeros(2, 5, dataLength);
     for i=(1:length(singleTrialData))
         stateTransition = singleTrialData(i).prop.stateTransition;
         if all(ismember([3 4 5 6], stateTransition(1,:))) == 1
@@ -115,51 +121,60 @@ for t=(1:length(files))
             EMG(:,:, s) = EMGaroundGoCue;
             directionArray(s) = singleTrialData(i).prop.direction;
             rewardArray(s) = singleTrialData(i).prop.reward;
+            % ここを修正する
+            % GoCueTime-200:GoCueTime+600をそれぞれTime関数から取得しindexにに変換する
+            movementStartTime = find(singleTrialData(i).timeInTrial == GoCueTime);
+%             TargetOnsetTime = stateTransition(2, find(stateTransition(1, :)==6));
+%             movementEndTime = find(singleTrialData(i).timeInTrial == TargetOnsetTime);
+            velosityEachTrails = singleTrialData(i).handKinematics.velocity(movementStartTime-200:movementStartTime+600, :);
+            integratedVelosityArray(:, s) = rssq(velosityEachTrails, 2);
+            transitionTime(:, :, s) = stateTransition(:, find(stateTransition(1, :)==3):find(stateTransition(1, :)==3)+4);
         end
     end
-    
+
+    % for save normalize EMG data
     normalizedEMG = zeros(size(EMG));
     for channel=(1:emg_channel)
         normalizedEMGEachMuscle = (reshape(EMG(:, channel, :), 801, []) - normalizedParams(1, channel, t)) ./ normalizedParams(2, channel, t);
         normalizedEMG(:, channel, :) = normalizedEMGEachMuscle;
     end
     normalizedEMGAcrossDays = cat(3, normalizedEMGAcrossDays, normalizedEMG);
-    directionAcrossDays = [directionAcrossDays directionArray];
-    rewardAcrossDays = [rewardAcrossDays rewardArray];
+    directionAcrossDays = cat(2, directionAcrossDays, directionArray);
+    rewardAcrossDays = cat(2, rewardAcrossDays, rewardArray);
+    integratedVelositesAcrossDays = cat(2, integratedVelositesAcrossDays, integratedVelosityArray);
+    transitionTimeAcrossDays = cat(3, transitionTimeAcrossDays, transitionTime);
     if t == 1
         datapointEachDay(t) = size(normalizedEMG, 3);
     else
         datapointEachDay(t) = size(normalizedEMG, 3) + datapointEachDay(t-1);
-    end 
+    end
 end
 
 muscleLabel = file.muscleLabel;
-% save('../data/normalized/Rocky20220216to0303_movave_50ms.mat', 'normalizedEMGAcrossDays', 'directionAcrossDays', 'rewardAcrossDays', "datapointEachDay", "muscleLabel");
 
 exceptionRemovedEMG = struct;
-exceptionRemovedEMG.emg = struct.empty(0);
+exceptionRemovedEMG.data.emgs = struct.empty(0);
+exceptionRemovedEMG.data.directions = directionAcrossDays;
+exceptionRemovedEMG.data.rewards = rewardAcrossDays;
+exceptionRemovedEMG.data.kinematics.integratedVelosities = integratedVelositesAcrossDays;
+exceptionRemovedEMG.data.transitions = transitionTimeAcrossDays;
+exceptionRemovedEMG.preprocessProp.normalizedParams = normalizedParams;
+exceptionRemovedEMG.preprocessProp.nineMetadatas = tenDmetadataAcrossDays;
+exceptionRemovedEMG.preprocessProp.IndexEachDay = datapointEachDay;
 
 for channel=(1:emg_channel)
-    exceptionRemovedEMG.emg(channel).name=muscleLabel(channel);
-    exceptionRemovedEMG.emg(channel).signal = reshape(normalizedEMGAcrossDays(:, channel, :), size(normalizedEMGAcrossDays,1), []);
-    exceptionRemovedEMG.emg(channel).directionArray = directionAcrossDays;
-    exceptionRemovedEMG.emg(channel).rewardArray = rewardAcrossDays;
-
+    exceptionRemovedEMG.data.emgs(channel).name=muscleLabel(channel);
+    exceptionRemovedEMG.data.emgs(channel).signals = reshape(normalizedEMGAcrossDays(:, channel, :), size(normalizedEMGAcrossDays,1), []);
+    exceptionRemovedEMG.data.emgs(channel).exceptions = ones(1, length(directionAcrossDays));
     if muscleLabel(channel) == "Trap"
-        exceptionRemovedEMG.emg(channel).signal(:,1:datapointEachDay(1)) = [];
-        exceptionRemovedEMG.emg(channel).directionArray(:,1:datapointEachDay(1)) = [];
-        exceptionRemovedEMG.emg(channel).rewardArray(:,1:datapointEachDay(1)) = [];
+        exceptionRemovedEMG.data.emgs(channel).exceptions(:,1:datapointEachDay(1)) = 0;
     elseif muscleLabel(channel) == "Tric"
-        exceptionRemovedEMG.emg(channel).signal(:,datapointEachDay(5)+1:datapointEachDay(9)) = [];
-        exceptionRemovedEMG.emg(channel).directionArray(:,datapointEachDay(5)+1:datapointEachDay(9)) = [];
-        exceptionRemovedEMG.emg(channel).rewardArray(:,datapointEachDay(5)+1:datapointEachDay(9)) = [];
+        exceptionRemovedEMG.data.emgs(channel).exceptions(:,datapointEachDay(5)+1:datapointEachDay(9)) = 0;
     elseif muscleLabel(channel) == "LBic"
-        exceptionRemovedEMG.emg(channel).signal(:,datapointEachDay(8)+1:datapointEachDay(9)) = [];
-        exceptionRemovedEMG.emg(channel).directionArray(:,datapointEachDay(8)+1:datapointEachDay(9)) = [];
-        exceptionRemovedEMG.emg(channel).rewardArray(:,datapointEachDay(8)+1:datapointEachDay(9)) = [];
+        exceptionRemovedEMG.data.emgs(channel).exceptions(:,datapointEachDay(8)+1:datapointEachDay(9)) = 0;
     elseif muscleLabel(channel) == "PDel"
-        exceptionRemovedEMG.emg(channel).signal(:,datapointEachDay(8)+1:datapointEachDay(9)) = [];
-        exceptionRemovedEMG.emg(channel).directionArray(:,datapointEachDay(8)+1:datapointEachDay(9)) = [];
-        exceptionRemovedEMG.emg(channel).rewardArray(:,datapointEachDay(8)+1:datapointEachDay(9)) = [];
+        exceptionRemovedEMG.data.emgs(channel).exceptions(:,datapointEachDay(8)+1:datapointEachDay(9)) = 0;
     end
 end
+
+clearvars -except exceptionRemovedEMG

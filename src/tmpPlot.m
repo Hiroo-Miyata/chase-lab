@@ -1,29 +1,50 @@
+% load('../data/normalized/Rocky20220216to0303_ma50ms_successesOnly.mat');
 
+movement = exceptionRemovedEMG.data.kinematics.integratedVelosities; % 801 * N
+[maxVelosityMagnitudes, maxVelosityIndexs] = max(movement, [], 1); % should be 1*N
+
+over800 = zeros(1,size(movement, 2), 'logical');
+for i=(1:length(maxVelosityIndexs))
+    if maxVelosityIndexs(i) > 700
+        if maxVelosityIndexs(i) < 800
+            over800(i) = 1;
+        end
+    end
+end
+
+Y = movement(:, over800);
+figure
+plot(Y, "Color", [0.7 0.7 0.7])
+set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+hold on
+plot(mean(Y, 2), "Color", [0 0 0])
+hold off
+% histogram(maxVelosityIndexs)
 
 %
 % coefficient of variation across days
 %
-figure
-for channel=(1:5)
-    titles = {'Day1', 'Day2', 'Day3', 'Day4', 'Day5', 'Day6', 'Day7', 'Day8', 'Day9', 'Day10', 'Day11', 'Day12'};
-    Y = normalizedParams(2, channel, :) ./ normalizedParams(1, channel, :);
-    Y = reshape(Y, 1, []);
-    if file.muscleLabel(channel) == "Tric"
-        Y(5:9) = [];
-        titles(5:9) = [];
-    elseif file.muscleLabel(channel) == "Trap"
-        Y(1) = [];
-        titles(1) = [];
-    elseif file.muscleLabel(channel) == "LBic" || file.muscleLabel(channel) == "PDel"
-        Y(9) = [];
-        titles(9) = [];
-    end
-    plot(Y,'linewidth',2)
-    hold on
-end
-legend(file.muscleLabel)
-set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
-hold off
+% figure
+% for channel=(1:5)
+%     titles = {'Day1', 'Day2', 'Day3', 'Day4', 'Day5', 'Day6', 'Day7', 'Day8', 'Day9', 'Day10', 'Day11', 'Day12'};
+%     Y = normalizedParams(2, channel, :) ./ normalizedParams(1, channel, :);
+%     Y = reshape(Y, 1, []);
+%     if file.muscleLabel(channel) == "Tric"
+%         Y(5:9) = [];
+%         titles(5:9) = [];
+%     elseif file.muscleLabel(channel) == "Trap"
+%         Y(1) = [];
+%         titles(1) = [];
+%     elseif file.muscleLabel(channel) == "LBic" || file.muscleLabel(channel) == "PDel"
+%         Y(9) = [];
+%         titles(9) = [];
+%     end
+%     plot(Y,'linewidth',2)
+%     hold on
+% end
+% legend(file.muscleLabel)
+% set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+% hold off
 
 % 
 % z-indexed 9 datapoint metadata
@@ -79,7 +100,7 @@ hold off
 % 
 % EMG tuning curve at holding time as a function of reward and direction 
 % 
-% for channel=(1:1)
+% for channel=(1:5)
 %     emg = exceptionRemovedEMG.emg(channel);
 %     Y = zeros(8,4);
 %     Yerror = zeros(8,4);
