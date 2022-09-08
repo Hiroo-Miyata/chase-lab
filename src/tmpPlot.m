@@ -1,26 +1,38 @@
-load('../data/normalized/Rocky20220216to0303_ma50ms_successesOnly.mat');
+% load('../data/normalized/Rocky20220216to0303_ma50ms_successesOnly.mat');
 % load('../data/normalized/Rocky20220216to0303_ma50ms_failureAlso.mat');
-movement = exceptionRemovedEMG.data.kinematics.integratedVelosities; % timewindow * N
-[maxVelosityMagnitudes, maxVelosityIndexs] = max(movement, [], 1); % should be 1*N
+% movement = exceptionRemovedEMG.data.kinematics.integratedVelosities; % timewindow * N
+% [maxVelosityMagnitudes, maxVelosityIndexs] = max(movement, [], 1); % should be 1*N
+% 
+% normals = zeros(1,size(movement, 2), 'logical');
+% for i=(1:length(maxVelosityIndexs))
+%     if maxVelosityIndexs(i) > 300+200
+%         normals(i) = 1;
+%     end
+% end
+% 
+% Y = zeros(1, 4);
+% Yerror = zeros(1, 4);
+% for reward=(1:4)
+%     condition = all([exceptionRemovedEMG.data.rewards==reward;normals]);
+%     Y(reward) = mean(maxVelosityMagnitudes(condition));
+%     Yerror(reward) = std(maxVelosityMagnitudes(condition)) / length(maxVelosityMagnitudes(condition));
+% end
+% errorbar(Y, Yerror, 'Color', "k",'linewidth',2)
+% set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+% xticks([1 2 3 4]);
+% xticklabels({'Small', 'Medium', 'Large', 'Jackpot'});
 
-normals = zeros(1,size(movement, 2), 'logical');
-for i=(1:length(maxVelosityIndexs))
-    if maxVelosityIndexs(i) > 300+200
-        normals(i) = 1;
-    end
+%
+% visulize mean EMG across day
+%
+for channel = (1:5)
+    emg = exceptionRemovedEMG.data.emgs(channel);
+    Y = emg.signals(1:801, cast(emg.exceptions, 'logical'));
+    figure
+    plot(mean(Y, 1),'linewidth',2)
+    title(emg.name);
+    set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
 end
-
-Y = zeros(1, 4);
-Yerror = zeros(1, 4);
-for reward=(1:4)
-    condition = all([exceptionRemovedEMG.data.rewards==reward;normals]);
-    Y(reward) = mean(maxVelosityMagnitudes(condition));
-    Yerror(reward) = std(maxVelosityMagnitudes(condition)) / length(maxVelosityMagnitudes(condition));
-end
-errorbar(Y, Yerror, 'Color', "k",'linewidth',2)
-set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
-xticks([1 2 3 4]);
-xticklabels({'Small', 'Medium', 'Large', 'Jackpot'});
 
 
 %
