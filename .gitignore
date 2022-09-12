@@ -1,2 +1,5 @@
 data/*/*.mat
 result/images/*/*.fig
+.DS_Store
+./*/.DS_Store
+./*/*/.DS_Store
