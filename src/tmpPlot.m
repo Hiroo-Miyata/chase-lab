@@ -1,5 +1,5 @@
 % load('../data/normalized/Rocky20220216to0303_ma50ms_successesOnly.mat');
-% load('../data/normalized/Rocky20220216to0303_ma50ms_failureAlso.mat');
+load('../data/normalized/Rocky20220216to0303_ma50ms_failureAlso.mat');
 % movement = exceptionRemovedEMG.data.kinematics.integratedVelosities; % timewindow * N
 % [maxVelosityMagnitudes, maxVelosityIndexs] = max(movement, [], 1); % should be 1*N
 % 
@@ -22,22 +22,65 @@
 % xticks([1 2 3 4]);
 % xticklabels({'Small', 'Medium', 'Large', 'Jackpot'});
 
-%
-% visulize mean EMG across day
-%
-for channel = (1:5)
+
+%% EMG variablity as a function of reward
+
+% for reward=(1:4)
+%     emg;
+%     meanEMG = mean(emg);
+%     
+% end
+
+%% mean trajectories around Go Cue(-200~+600) as a function of direction
+for channel=(1:5)
+    data = exceptionRemovedEMG.data;
     emg = exceptionRemovedEMG.data.emgs(channel);
-    Y = emg.signals(1:801, cast(emg.exceptions, 'logical'));
+    Y = zeros(801, 8);
+    for direction=(1:8)
+        condition = all([data.directions==direction; emg.exceptions]);
+        fetchedEMG = emg.signals(1:801, condition);
+        Y(:, direction) = mean(fetchedEMG, 2);
+    end
     figure
-    plot(mean(Y, 1),'linewidth',2)
-    title(emg.name);
-    set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+    plot(Y, "LineWidth", 2)
+    set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out', "LineWidth", 2);
 end
 
 
-%
-% visualize mean EMG around velocity peak value aligned by holding time 
-%
+%% histogram of the time spent on reaching period of both successes and failure 
+% for channel=(5:5)
+%     successes = [];
+%     failures = [];
+%     for i=(1:size(exceptionRemovedEMG.data.transitions, 3))
+%         transition = exceptionRemovedEMG.data.transitions(:, :, i);
+%         if transition(1,4) == 6
+%             successes = [successes, int32(transition(2,4)-transition(2,2))];
+%         else
+%             failures = [failures, int32(transition(2,4)-transition(2,2))];
+%         end
+%     end
+%     histogram(successes,'FaceAlpha',0.2, "FaceColor","r")
+%     hold on
+%     histogram(failures,'FaceAlpha',0.2, "FaceColor","b")
+%     hold off
+% end
+       
+
+%     emg = exceptionRemovedEMG.data.emgs(channel); 
+
+%% visualize mean EMG across day
+
+% for channel = (1:5)
+%     emg = exceptionRemovedEMG.data.emgs(channel);
+%     Y = emg.signals(1:801, cast(emg.exceptions, 'logical'));
+%     figure
+%     plot(mean(Y, 1),'linewidth',2)
+%     title(emg.name);
+%     set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+% end
+
+
+%% visualize mean EMG around velocity peak value aligned by holding time 
 
 % baseline = zeros(8, 5);
 % for channel=(1:5)
@@ -84,9 +127,7 @@ end
 %     xlim([0.5 8.5]);
 % end
 
-%
-% visualize mean EMG around velocity peak value
-%
+%% visualize mean EMG around velocity peak value
 
 % datapoint = zeros(8,4,5);
 % for channel=(1:5) %1:length(exceptionRemovedEMG.data.emgs)
@@ -136,9 +177,8 @@ end
 % histogram(maxVelosityIndexs(normals)-200)
 % title("Histogram of maxVelosityMagnitudes for each trial")
 
-%
-% coefficient of variation across days
-%
+
+%% coefficient of variation across days
 
 % figure
 % for channel=(1:5)
@@ -162,9 +202,8 @@ end
 % set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
 % hold off
 
-% 
-% z-indexed 9 datapoint metadata
-% 
+
+%% z-indexed 9 datapoint metadata 
 
 % for channel=(1:5)
 %     titles = {'Day1', 'Day2', 'Day3', 'Day4', 'Day5', 'Day6', 'Day7', 'Day8', 'Day9', 'Day10', 'Day11', 'Day12'};
@@ -186,10 +225,8 @@ end
 %     xticklabels({'0', '45', '90', '135', '180', '225', '270', '325', 'hold'});
 % end
 
-
-% 
-% Mean EMG at holding time as a function of reward  
-% 
+ 
+%% Mean EMG at holding time as a function of reward  
 
 % for channel=(1:5)
 %     Y = zeros(1,4);
@@ -215,9 +252,7 @@ end
 % end
 
 
-% 
-% EMG tuning curve at holding time as a function of reward and direction 
-% 
+%% EMG tuning curve at holding time as a function of reward and direction 
 
 % for channel=(1:5)
 %     data = exceptionRemovedEMG.data;
