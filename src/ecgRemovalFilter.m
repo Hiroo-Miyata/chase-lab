@@ -1,4 +1,4 @@
-function [ eout, ec] = adaptiveFilter(emg,ecg, emgrest, ecgrest,fs)
+function [ eout, ec] = ecgRemovalFilter(emg,ecg, emgrest, ecgrest,fs)
 
 if length(emgrest) ~= length(ecgrest)
     error('emgrest and ecgrest data-length must be the same');

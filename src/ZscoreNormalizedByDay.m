@@ -1,4 +1,4 @@
-demg_channel = 5;
+emg_channel = 5;
 files = ["0216", "0217", "0218", "0221", "0222", "0223", "0224", "0225", "0228", "0301", "0302", "0303"];
 
 %
@@ -114,7 +114,7 @@ for t=(1:length(files)) %(1:length(files)
     transitionTime = zeros(2, 5, dataLength);
     for i=(1:length(singleTrialData))
         stateTransition = singleTrialData(i).prop.stateTransition;
-        if all(ismember([3 4 5 12], stateTransition(1,:))) == 1
+        if all(ismember([3 4 5], stateTransition(1,:))) == 1
             s = s+1;
             GoCueTime = stateTransition(2, find(stateTransition(1, :)==4));
             % start: -200ms end: +600ms at GoCue
@@ -123,7 +123,7 @@ for t=(1:length(files)) %(1:length(files)
             directionArray(s) = singleTrialData(i).prop.direction;
             rewardArray(s) = singleTrialData(i).prop.reward;
             % ここを修正する
-            % GoCueTime-200:GoCueTime+600をそれぞれTime関数から取得しindexにに変換する
+            % GoCueTime-200:GoCueTime+600をそれぞれTime関数から取得しindexに変換する
             movementStartTime = find(singleTrialData(i).timeInTrial == GoCueTime);
 %             TargetOnsetTime = stateTransition(2, find(stateTransition(1, :)==6));
 %             movementEndTime = find(singleTrialData(i).timeInTrial == TargetOnsetTime);
@@ -169,6 +169,7 @@ for channel=(1:emg_channel)
     exceptionRemovedEMG.data.emgs(channel).exceptions = ones(1, length(directionAcrossDays));
     if muscleLabel(channel) == "Trap"
         exceptionRemovedEMG.data.emgs(channel).exceptions(:,1:datapointEachDay(1)) = 0;
+        exceptionRemovedEMG.data.emgs(channel).exceptions(:,datapointEachDay(11):end) = 0;
     elseif muscleLabel(channel) == "Tric"
         exceptionRemovedEMG.data.emgs(channel).exceptions(:,datapointEachDay(5)+1:datapointEachDay(9)) = 0;
     elseif muscleLabel(channel) == "LBic"
@@ -179,4 +180,4 @@ for channel=(1:emg_channel)
 end
 
 clearvars -except exceptionRemovedEMG
-save('../data/normalized/Rocky20220216to0303_ma50ms_undershoot.mat', "exceptionRemovedEMG");
+save('../data/normalized/Rocky20220216to0303_ma50ms_345.mat', "exceptionRemovedEMG");
