@@ -1,5 +1,5 @@
 % load('../data/normalized/Rocky20220216to0303_ma50ms_successesOnly.mat');
-% load('../data/normalized/Rocky20220216to0303_ma50ms_345.mat');
+load('../data/normalized/Rocky20220216to0303_ma50ms_345.mat');
 % movement = exceptionRemovedEMG.data.kinematics.integratedVelosities; % timewindow * N
 % [maxVelosityMagnitudes, maxVelosityIndexs] = max(movement, [], 1); % should be 1*N
 % 
@@ -34,7 +34,7 @@
 %     plot(emg.signals(:, weirdIdx))
 % end
 
-%% check normalization method
+%% add goodEMG data 
 % dates = ["0216", "0217", "0218", "0221", "0222", "0223", "0224", "0225", "0228", "0301", "0302", "0303"];
 % for d=(1:length(dates))
 %     date = dates(d);
@@ -60,29 +60,29 @@
 % end
 
 %% check normalization method
-dates = ["0216", "0217", "0218", "0221", "0222", "0223", "0224", "0225", "0228", "0301", "0302", "0303"];
-figure
-for d=(1:length(dates))
-    date = dates(d);
-    load('../data/normalized/singleTrials_Rocky2022' + date + '_1ms.mat');
-    Y = (EMGMetrics.maxSignalTuningCurve_mean - EMGMetrics.normalizedParams(1,:)) ./ EMGMetrics.normalizedParams(2,:);
-    if d == 1
-        Y(:, EMGMetrics.muscleNames == "Trap") = 0;
-    elseif d == 6 || d == 7 || d == 8
-        Y(:, EMGMetrics.muscleNames == "Tric") = 0;
-    elseif d == 9
-        condition = any([EMGMetrics.muscleNames == "Tric"; EMGMetrics.muscleNames == "LBic"; EMGMetrics.muscleNames == "PDel"]);
-        Y(:, condition) = 0;
-    elseif d == 12
-        Y(:, EMGMetrics.muscleNames == "Trap") = 0;
-    end
-    plot(Y)
-    rewColors = [1 0 0; 1 0.6470 0; 0 0.6470 0; 0 0 1; 0 0 0];
-    colororder(rewColors);
-    hold on
-end
-set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
-hold off
+% dates = ["0216", "0217", "0218", "0221", "0222", "0223", "0224", "0225", "0228", "0301", "0302", "0303"];
+% figure
+% for d=(1:length(dates))
+%     date = dates(d);
+%     load('../data/normalized/singleTrials_Rocky2022' + date + '_1ms.mat');
+%     Y = (EMGMetrics.maxSignalTuningCurve_mean - EMGMetrics.normalizedParams(1,:)) ./ EMGMetrics.normalizedParams(2,:);
+%     if d == 1
+%         Y(:, EMGMetrics.muscleNames == "Trap") = 0;
+%     elseif d == 6 || d == 7 || d == 8
+%         Y(:, EMGMetrics.muscleNames == "Tric") = 0;
+%     elseif d == 9
+%         condition = any([EMGMetrics.muscleNames == "Tric"; EMGMetrics.muscleNames == "LBic"; EMGMetrics.muscleNames == "PDel"]);
+%         Y(:, condition) = 0;
+%     elseif d == 12
+%         Y(:, EMGMetrics.muscleNames == "Trap") = 0;
+%     end
+%     plot(Y)
+%     rewColors = [1 0 0; 1 0.6470 0; 0 0.6470 0; 0 0 1; 0 0 0];
+%     colororder(rewColors);
+%     hold on
+% end
+% set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+% hold off
 
 %% EMG fatigue across the session
 
@@ -164,8 +164,11 @@ hold off
 %         Y(:, direction) = mean(fetchedEMG, 2);
 %     end
 %     figure
-%     plot(Y, "LineWidth", 2)
+%     plot((-200:600), Y, "LineWidth", 2)
 %     set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out', "LineWidth", 2);
+%     legend(["right", "upper right", "upper", "upper left", "left", "lower left", "lower", "lower right"], ...
+%             "Location", "northwest")
+%     title(emg.name);
 % end
 
 

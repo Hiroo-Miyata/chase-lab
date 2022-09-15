@@ -1,5 +1,5 @@
 % load('../data/normalized/Rocky20220216to0303_ma50ms_successesOnly.mat');
-% load('../data/normalized/Rocky20220216to0303_ma50ms_345.mat');
+load('../data/normalized/Rocky20220216to0303_ma50ms_345.mat');
 % movement = exceptionRemovedEMG.data.kinematics.integratedVelosities; % timewindow * N
 % [maxVelosityMagnitudes, maxVelosityIndexs] = max(movement, [], 1); % should be 1*N
 % 
@@ -34,7 +34,7 @@
 %     plot(emg.signals(:, weirdIdx))
 % end
 
-%% check normalization method
+%% add goodEMG data 
 % dates = ["0216", "0217", "0218", "0221", "0222", "0223", "0224", "0225", "0228", "0301", "0302", "0303"];
 % for d=(1:length(dates))
 %     date = dates(d);
@@ -64,7 +64,7 @@
 % figure
 % for d=(1:length(dates))
 %     date = dates(d);
-%     load('../data/normalized/singleTrials_Rocky2022' + date + '_50ms.mat');
+%     load('../data/normalized/singleTrials_Rocky2022' + date + '_1ms.mat');
 %     Y = (EMGMetrics.maxSignalTuningCurve_mean - EMGMetrics.normalizedParams(1,:)) ./ EMGMetrics.normalizedParams(2,:);
 %     if d == 1
 %         Y(:, EMGMetrics.muscleNames == "Trap") = 0;
@@ -154,19 +154,21 @@
 % box off;
 
 %% mean trajectories around Go Cue(-200~+600) as a function of direction
-% for channel=(1:5)
-%     data = exceptionRemovedEMG.data;
-%     emg = exceptionRemovedEMG.data.emgs(channel);
-%     Y = zeros(801, 8);
-%     for direction=(1:8)
-%         condition = all([data.directions==direction; emg.exceptions]);
-%         fetchedEMG = emg.signals(1:801, condition);
-%         Y(:, direction) = mean(fetchedEMG, 2);
-%     end
-%     figure
-%     plot(Y, "LineWidth", 2)
-%     set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out', "LineWidth", 2);
-% end
+for channel=(1:5)
+    data = exceptionRemovedEMG.data;
+    emg = exceptionRemovedEMG.data.emgs(channel);
+    Y = zeros(801, 8);
+    for direction=(1:8)
+        condition = all([data.directions==direction; emg.exceptions]);
+        fetchedEMG = emg.signals(1:801, condition);
+        Y(:, direction) = mean(fetchedEMG, 2);
+    end
+    figure
+    plot((-200:600), Y, "LineWidth", 2)
+    set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out', "LineWidth", 2);
+    legend({"right", "upper right", "upper", "upper left", "left", "lower left", "lower", "lower right"}, ...
+            "")
+end
 
 
 %% histogram of the time spent on reaching period of both successes and failure 
