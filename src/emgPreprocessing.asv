@@ -45,7 +45,7 @@ for date=dates
     % Step 2 smoothed and put into the array
     % Step 3 separate by trial from synchInfo
     % Step 4 load Property from Hand data (reward, direction, success/failure, Handmovement)
-    preprocessedEMGs = emgFiltering(signalData,fs, 0.001, muscleLabel);
+    preprocessedEMGs = emgFiltering(signalData,fs, 0.05, muscleLabel);
     
     preprocessedTrialData = struct.empty(0);
     
@@ -67,5 +67,5 @@ for date=dates
     emgRest = preprocessedEMGs(1:120*new_fs, :);
     % save('../data/processed/singleTrials_Rocky20220216_movave_50ms.mat', 'preprocessedTrialData', 'muscleLabel', "emg_rest");
     [normalizedTrialData, EMGMetrics] = emgNormalization(preprocessedTrialData, emgRest, muscleLabel);
-    save('../data/normalized/singleTrials_Rocky2022' + date +'_1ms.mat', 'normalizedTrialData', 'EMGMetrics');
+    save('../data/normalized/singleTrials_Rocky2022' + date +'_50ms.mat', 'normalizedTrialData', 'EMGMetrics');
 end

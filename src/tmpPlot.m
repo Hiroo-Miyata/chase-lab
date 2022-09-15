@@ -35,11 +35,47 @@
 % end
 
 %% check normalization method
-dates = ["0222", "0221"];
+% dates = ["0216", "0217", "0218", "0221", "0222", "0223", "0224", "0225", "0228", "0301", "0302", "0303"];
+% for d=(1:length(dates))
+%     date = dates(d);
+%     load('../data/normalized/singleTrials_Rocky2022' + date + '_1ms.mat');
+%     
+% 
+%     for i=(1:length(normalizedTrialData))
+%         if d == 1
+%             normalizedTrialData(i).goodEMGData = EMGMetrics.muscleNames ~= "Trap";
+%         elseif d == 6 || d == 7 || d == 8
+%             normalizedTrialData(i).goodEMGData = EMGMetrics.muscleNames ~= "Tric";
+%         elseif d == 9
+%             condition = any([EMGMetrics.muscleNames == "Tric"; EMGMetrics.muscleNames == "LBic"; EMGMetrics.muscleNames == "PDel"]);
+%             normalizedTrialData(i).goodEMGData = ~condition;
+%         elseif d == 12
+%             normalizedTrialData(i).goodEMGData = EMGMetrics.muscleNames ~= "Trap";
+%         else
+%             normalizedTrialData(i).goodEMGData = true(5, 1);
+%         end
+%     end
+% 
+%     save('../data/normalized/singleTrials_Rocky2022' + date + '_1ms.mat', 'normalizedTrialData', 'EMGMetrics');
+% end
+
+%% check normalization method
+dates = ["0216", "0217", "0218", "0221", "0222", "0223", "0224", "0225", "0228", "0301", "0302", "0303"];
 figure
-for date=dates
-    load('../data/normalized/singleTrials_Rocky2022' + date + '_50ms.mat');
+for d=(1:length(dates))
+    date = dates(d);
+    load('../data/normalized/singleTrials_Rocky2022' + date + '_1ms.mat');
     Y = (EMGMetrics.maxSignalTuningCurve_mean - EMGMetrics.normalizedParams(1,:)) ./ EMGMetrics.normalizedParams(2,:);
+    if d == 1
+        Y(:, EMGMetrics.muscleNames == "Trap") = 0;
+    elseif d == 6 || d == 7 || d == 8
+        Y(:, EMGMetrics.muscleNames == "Tric") = 0;
+    elseif d == 9
+        condition = any([EMGMetrics.muscleNames == "Tric"; EMGMetrics.muscleNames == "LBic"; EMGMetrics.muscleNames == "PDel"]);
+        Y(:, condition) = 0;
+    elseif d == 12
+        Y(:, EMGMetrics.muscleNames == "Trap") = 0;
+    end
     plot(Y)
     rewColors = [1 0 0; 1 0.6470 0; 0 0.6470 0; 0 0 1; 0 0 0];
     colororder(rewColors);
