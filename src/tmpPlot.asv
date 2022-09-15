@@ -1,15 +1,17 @@
 % load('../data/normalized/Rocky20220216to0303_ma50ms_successesOnly.mat');
 load('../data/normalized/Rocky20220216to0303_ma50ms_345.mat');
+
+%% get maxVelosity data
 % movement = exceptionRemovedEMG.data.kinematics.integratedVelosities; % timewindow * N
 % [maxVelosityMagnitudes, maxVelosityIndexs] = max(movement, [], 1); % should be 1*N
-% 
 % normals = zeros(1,size(movement, 2), 'logical');
 % for i=(1:length(maxVelosityIndexs))
 %     if maxVelosityIndexs(i) > 300+200
 %         normals(i) = 1;
 %     end
 % end
-% 
+
+%% mean peak velocity of EMG as a function of reward
 % Y = zeros(1, 4);
 % Yerror = zeros(1, 4);
 % for reward=(1:4)
@@ -21,18 +23,6 @@ load('../data/normalized/Rocky20220216to0303_ma50ms_345.mat');
 % set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
 % xticks([1 2 3 4]);
 % xticklabels({'Small', 'Medium', 'Large', 'Jackpot'});
-
-% for channel=(1:1)
-%     data = exceptionRemovedEMG.data;
-%     emg = exceptionRemovedEMG.data.emgs(channel);
-%     idx = (1:size(emg.signals, 2));
-%     fetchedEMG = mean(emg.signals(50:250, cast(emg.exceptions, 'logical')), 1);
-%     fetchedIdx = idx(cast(emg.exceptions, 'logical'));
-%     
-% %     plot(fetchedEMG(fetchedEMG < -1.5))
-%     weirdIdx = fetchedIdx(fetchedEMG < -1.5);
-%     plot(emg.signals(:, weirdIdx))
-% end
 
 %% add goodEMG data 
 % dates = ["0216", "0217", "0218", "0221", "0222", "0223", "0224", "0225", "0228", "0301", "0302", "0303"];
@@ -85,7 +75,6 @@ load('../data/normalized/Rocky20220216to0303_ma50ms_345.mat');
 % hold off
 
 %% EMG fatigue across the session
-
 % parameters = zeros(2, 0);
 % for channel=(1:5)
 %     data = exceptionRemovedEMG.data;
@@ -126,50 +115,57 @@ load('../data/normalized/Rocky20220216to0303_ma50ms_345.mat');
 % hold off
 
 %% EMG variablity as a function of reward
-% 
-% Y0 = zeros(5, 8, 4);
-% Y = zeros(40, 4);
-% for channel=(1:5)
-%     data = exceptionRemovedEMG.data;
-%     emg = exceptionRemovedEMG.data.emgs(channel);
-%     for direction=(1:8)
-%         condition = all([data.directions==direction; emg.exceptions]);
-%         rewardArray = data.rewards(condition);
-%         fetchedEMG = mean(emg.signals(50:250, condition), 1); %-150~+50ms
-%         zScoredEMG = zscore(fetchedEMG);
-%         for reward=(1:4)
-%             Y0(channel,direction, reward) = mean(zScoredEMG(rewardArray==reward));
-%             Y(channel*8+direction-8, reward) = mean(zScoredEMG(rewardArray==reward));
-%         end
-%     end
-% end
-% scatter(Y, ones(40,4) .* (.1:.1:.4))
-% set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out', "LineWidth", 1, ...
-%     "XAxisLocation", "origin", "YAxisLocation", 'origin', 'YTickLabel',[]);
-% ylim([0 .5])
-% xlabel("z-indexed mean EMG around Go Cue")
-% rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
-% colororder(rewColors);
-% gca.YAxis.Visible = 'off';
-% box off;
-
-%% mean trajectories around Go Cue(-200~+600) as a function of direction
+Y0 = zeros(5, 8, 4);
+Y = zeros(40, 4);
 for channel=(1:5)
     data = exceptionRemovedEMG.data;
     emg = exceptionRemovedEMG.data.emgs(channel);
-    Y = zeros(801, 8);
     for direction=(1:8)
         condition = all([data.directions==direction; emg.exceptions]);
-        fetchedEMG = emg.signals(1:801, condition);
-        Y(:, direction) = mean(fetchedEMG, 2);
+        rewardArray = data.rewards(condition);
+        fetchedEMG = mean(emg.signals(50:250, condition), 1); %-150~+50ms
+        zScoredEMG = zscore(fetchedEMG);
+        for reward=(1:4)
+            Y0(channel,direction, reward) = mean(zScoredEMG(rewardArray==reward));
+            Y(channel*8+direction-8, reward) = mean(zScoredEMG(rewardArray==reward));
+        end
     end
-    figure
-    plot((-200:600), Y, "LineWidth", 2)
-    set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out', "LineWidth", 2);
-    legend({"right", "upper right", "upper", "upper left", "left", "lower left", "lower", "lower right"}, ...
-            "")
 end
+figure
+rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
+edges = (-0.3:0.02:0.3);
+for i=(1:size(Y, 2))
+    N = histcounts(Y(:, i), edges);
+    prob = N / size(Y, 1);
+    plot(prob, rewColors(i, ))
+    % set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+    % xticks([1 2 3 4]);
+    % xticklabels({'Small', 'Medium', 'Large', 'Jackpot'});
+    set(h, "Normalization", 'probability', 'Binwidth', 0.01, 'FaceColor', 'none', 'EdgeColor', rewColors(i, :));
+    hold on
+end
+hold off
+xlabel("z-indexed mean EMG around Go Cue")
+gca.YAxis.Visible = 'off';
+box off;
 
+%% mean trajectories around Go Cue(-200~+600) as a function of direction
+% for channel=(1:5)
+%     data = exceptionRemovedEMG.data;
+%     emg = exceptionRemovedEMG.data.emgs(channel);
+%     Y = zeros(801, 8);
+%     for direction=(1:8)
+%         condition = all([data.directions==direction; emg.exceptions]);
+%         fetchedEMG = emg.signals(1:801, condition);
+%         Y(:, direction) = mean(fetchedEMG, 2);
+%     end
+%     figure
+%     plot((-200:600), Y, "LineWidth", 2)
+%     set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out', "LineWidth", 2);
+%     legend(["right", "upper right", "upper", "upper left", "left", "lower left", "lower", "lower right"], ...
+%             "Location", "northwest")
+%     title(emg.name);
+% end
 
 %% histogram of the time spent on reaching period of both successes and failure 
 % for channel=(5:5)
@@ -188,12 +184,8 @@ end
 %     histogram(failures,'FaceAlpha',0.2, "FaceColor","b")
 %     hold off
 % end
-       
-
-%     emg = exceptionRemovedEMG.data.emgs(channel); 
 
 %% visualize mean EMG across day
-
 % for channel = (1:5)
 %     emg = exceptionRemovedEMG.data.emgs(channel);
 %     Y = emg.signals(50:251, cast(emg.exceptions, 'logical'));
@@ -204,9 +196,7 @@ end
 %     hold off
 % end
 
-
 %% visualize mean EMG around velocity peak value aligned by holding time 
-
 % baseline = zeros(8, 5);
 % for channel=(1:5)
 %     emg = exceptionRemovedEMG.data.emgs(channel);
@@ -253,7 +243,6 @@ end
 % end
 
 %% visualize mean EMG around velocity peak value
-
 % datapoint = zeros(8,4,5);
 % for channel=(1:5) %1:length(exceptionRemovedEMG.data.emgs)
 %     data = exceptionRemovedEMG.data;
@@ -302,9 +291,7 @@ end
 % histogram(maxVelosityIndexs(normals)-200)
 % title("Histogram of maxVelosityMagnitudes for each trial")
 
-
 %% coefficient of variation across days
-
 % figure
 % for channel=(1:5)
 %     titles = {'Day1', 'Day2', 'Day3', 'Day4', 'Day5', 'Day6', 'Day7', 'Day8', 'Day9', 'Day10', 'Day11', 'Day12'};
@@ -327,9 +314,7 @@ end
 % set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
 % hold off
 
-
 %% z-indexed 9 datapoint metadata 
-
 % for channel=(1:5)
 %     titles = {'Day1', 'Day2', 'Day3', 'Day4', 'Day5', 'Day6', 'Day7', 'Day8', 'Day9', 'Day10', 'Day11', 'Day12'};
 %     figure
@@ -350,9 +335,7 @@ end
 %     xticklabels({'0', '45', '90', '135', '180', '225', '270', '325', 'hold'});
 % end
 
- 
 %% Mean EMG at holding time as a function of reward  
-
 % for channel=(1:5)
 %     Y = zeros(1,4);
 %     Yerror = zeros(1,4);
@@ -376,9 +359,23 @@ end
 %     set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
 % end
 
+%% EMG as a function of reward hypothesis
+% x = (1:8)
+% Yhypo = sin(x / 4 * pi)
+% Yhypos = ones(4, 8) .* Yhypo
+% Yhypos = Yhypos ./ 10
+% Yhypos = Yhypos + [-.95; -.9; -.85; -.8]
+% plot(Yhypos.','linewidth',2);
+% title('ADel');
+% legend(["Small", "Medium", "Large", "Jackpot"])
+% rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
+% colororder(rewColors);
+% set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out','linewidth',2);
+% xticks([1 2 3 4 5 6 7 8]);
+% xticklabels({'0', '45', '90', '135', '180', '225', '270', '325'});
+% xlim([0.5 8.5]);
 
 %% EMG tuning curve at holding time as a function of reward and direction 
-
 % for channel=(1:5)
 %     data = exceptionRemovedEMG.data;
 %     emg = exceptionRemovedEMG.data.emgs(channel);
@@ -407,36 +404,4 @@ end
 %     xticks([1 2 3 4 5 6 7 8]);
 %     xticklabels({'0', '45', '90', '135', '180', '225', '270', '325'});
 %     xlim([0.5 8.5]);
-% end
-
-% 
-% for c=(3:3)
-%     figure
-%     Y = reshape(normalizedParams(:, c, :), 2, []);
-%     scatter(Y(1, :), Y(2, :));
-%     title(file.muscleLabel(c));
-%     dx = 0.05; dy = 0.1; % displacement so the text does not overlay the data points
-%     text(Y(1, :)+dx, Y(2, :)+dy, titles);
-% end
-
-% x=1:12;
-% for c=(1:1)
-%     figure
-%     scatter(means(:, c), stds(:, c));
-%     title('Mean and std of ' + string(file.muscleLabel(c)) + ' at each day');
-%     xlabel('Mean')
-%     ylabel('Standard')
-% end
-
-%  
-% for c=(3:3) % !!!!!!!!!
-%     figure
-%     plotMeanEMG = plot(EMGAcrossDays(c, :), 'b');
-%     hold on;
-%     plotXline = xline(endofTrialByDays(1:length(endofTrialByDays)-1), '-', titles, 'LineWidth', 1.5);
-%     hold off;
-%     title('Mean EMG of ' + string(file.muscleLabel(c)) + ' around Go Cue (-200 ~ +600 ms)');
-%     xlabel('Trials');
-%     ylabel('Mean EMG (a.u)');
-%     ylim([0 300]);
 % end
