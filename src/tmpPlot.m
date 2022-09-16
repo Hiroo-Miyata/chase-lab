@@ -75,79 +75,85 @@ load('../data/normalized/Rocky20220216to0303_ma50ms_345.mat');
 % hold off
 
 %% EMG fatigue across the session
-% parameters = zeros(2, 0);
-% for channel=(1:5)
-%     data = exceptionRemovedEMG.data;
-%     emg = exceptionRemovedEMG.data.emgs(channel);
-%     acrossday = zeros(size(emg.exceptions));
-%     startTrial = 1;
-%     for day = (1:length(exceptionRemovedEMG.preprocessProp.IndexEachDay))
-%         fetchedEMG = mean(emg.signals(50:250, startTrial:exceptionRemovedEMG.preprocessProp.IndexEachDay(day)), 1); %-150~+50ms
-%         exception = emg.exceptions(startTrial:exceptionRemovedEMG.preprocessProp.IndexEachDay(day));
-%         fetchedEMG = fetchedEMG(cast(exception, "logical"));
-%         startTrial = exceptionRemovedEMG.preprocessProp.IndexEachDay(day)+1;
-%         fprintf("emg size: %d \n", length(fetchedEMG));
-%         if length(fetchedEMG) > 2
-%             X = (1:length(fetchedEMG));
-%             Y = fetchedEMG;
-%             covariance = cov(Y, X);
-%             alpha = covariance(1,2) / var(X);
-%             beta = mean(Y) - alpha * mean(X);
-%             parameters(:, end+1) = [beta beta+alpha*500];
-% %             figure
-% %             plot(X,Y, 'color', [.5 .5 .5])
-% %             hold on
-% %             plot(X, (alpha*X+beta), "k", "LineWidth", 2);
-% %             title([emg.name,": Day",num2str(day)]);
-% %             hold off
-%         end
-%     end
-% end
-% 
-% 
-% plot([1 500], reshape(parameters, 2, []), 'color', [.5 .5 .5])
-% hold on
-% plot([1 500], mean(reshape(parameters, 2, []), 2), "k", 'linewidth', 3)
-% set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out', "LineWidth", 1.5);
-% xlabel("trials")
-% ylabel("regression EMG")
-% title("regression EMG of all muscle")
-% hold off
-
-%% EMG variablity as a function of reward
-Y0 = zeros(5, 8, 4);
-Y = zeros(40, 4);
+parameters = struct.empty(5, 0);
 for channel=(1:5)
     data = exceptionRemovedEMG.data;
     emg = exceptionRemovedEMG.data.emgs(channel);
-    for direction=(1:8)
-        condition = all([data.directions==direction; emg.exceptions]);
-        rewardArray = data.rewards(condition);
-        fetchedEMG = mean(emg.signals(50:250, condition), 1); %-150~+50ms
-        zScoredEMG = zscore(fetchedEMG);
-        for reward=(1:4)
-            Y0(channel,direction, reward) = mean(zScoredEMG(rewardArray==reward));
-            Y(channel*8+direction-8, reward) = mean(zScoredEMG(rewardArray==reward));
+    acrossday = zeros(size(emg.exceptions));
+    startTrial = 1;
+    parameters(channel).diff = [];
+    for day = (1:length(exceptionRemovedEMG.preprocessProp.IndexEachDay))
+        fetchedEMG = mean(emg.signals(50:250, startTrial:exceptionRemovedEMG.preprocessProp.IndexEachDay(day)), 1); %-150~+50ms
+        exception = emg.exceptions(startTrial:exceptionRemovedEMG.preprocessProp.IndexEachDay(day));
+        fetchedEMG = fetchedEMG(cast(exception, "logical"));
+        startTrial = exceptionRemovedEMG.preprocessProp.IndexEachDay(day)+1;
+%         fprintf("emg size: %d \n", length(fetchedEMG));
+        if length(fetchedEMG) > 2
+            movcar = round(length(fetchedEMG)*0.1);
+            Y = fetchedEMG;
+%             covariance = cov(Y, X);
+%             alpha = covariance(1,2) / var(X);
+%             beta = mean(Y) - alpha * mean(X);
+            parameters(channel).diff(end+1) = mean(fetchedEMG(end-movcar:end)) - mean(fetchedEMG(1:movcar));
+%             figure
+%             plot(X,Y, 'color', [.5 .5 .5])
+%             hold on
+%             plot(X, (alpha*X+beta), "k", "LineWidth", 2);
+%             title([emg.name + ": Day" + num2str(day)]);
+%             hold off
         end
     end
 end
-figure
-rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
-edges = (-0.3:0.04:0.3);
-x = (-0.28:0.04:0.28);
-for i=(1:size(Y, 2))
-    N = histcounts(Y(:, i), edges);
-    prob = N / size(Y, 1);
-    plot(x, prob, 'Color', rewColors(i, :), LineWidth=2)
-    % set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
-    set(h, "Normalization", 'probability', 'Binwidth', 0.01, 'FaceColor', 'none', 'EdgeColor', rewColors(i, :));
+xlabels = string.empty(0);
+for channel=(1:5)
+    scatter(channel * ones(size(parameters(channel).diff)), parameters(channel).diff, '*', "b");
     hold on
+    xlabels(end+1) = exceptionRemovedEMG.data.emgs(channel).name;
+    scatter(channel, mean(parameters(channel).diff), '*', "r");
+    [h,p] = ttest(parameters(channel).diff);
+    disp(p)
 end
+set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out', "LineWidth", 2);
+ylabel("last 10% EMG - first 10% EMG")
+xlim([0.5 5.5])
+xticklabels(xlabels)
+yline(0)
 hold off
-legend({'Small', 'Medium', 'Large', 'Jackpot'});
-xlabel("z-indexed mean EMG around Go Cue")
-gca.YAxis.Visible = 'off';
-box off;
+
+%% EMG variablity as a function of reward
+% Y0 = zeros(5, 8, 4);
+% Y = zeros(40, 4);
+% for channel=(1:5)
+%     data = exceptionRemovedEMG.data;
+%     emg = exceptionRemovedEMG.data.emgs(channel);
+%     for direction=(1:8)
+%         condition = all([data.directions==direction; emg.exceptions]);
+%         rewardArray = data.rewards(condition);
+%         fetchedEMG = mean(emg.signals(50:250, condition), 1); %-150~+50ms
+%         zScoredEMG = zscore(fetchedEMG);
+%         for reward=(1:4)
+%             Y0(channel,direction, reward) = mean(zScoredEMG(rewardArray==reward));
+%             Y(channel*8+direction-8, reward) = mean(zScoredEMG(rewardArray==reward));
+%         end
+%     end
+% end
+% figure
+% rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
+% edges = (-0.3:0.04:0.3);
+% x = (-0.28:0.04:0.28);
+% for i=(1:size(Y, 2))
+%     N = histcounts(Y(:, i), edges);
+%     prob = N / size(Y, 1);
+%     plot(x, prob, 'Color', rewColors(i, :), LineWidth=2)
+%     % set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+%     set(h, "Normalization", 'probability', 'Binwidth', 0.01, 'FaceColor', 'none', 'EdgeColor', rewColors(i, :));
+%     hold on
+% end
+% hold off
+% legend({'Small', 'Medium', 'Large', 'Jackpot'});
+% xlabel("z-indexed mean EMG around Go Cue")
+% gca.YAxis.Visible = 'off';
+% box off;
 
 %% mean trajectories around Go Cue(-200~+600) as a function of direction
 % for channel=(1:5)
