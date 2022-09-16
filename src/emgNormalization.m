@@ -50,7 +50,7 @@ tuningCurve(9, :) = mean(EMG(1:200, :, :), [1 3]); % mean at delay period
 tuningCurveStd(9, :) = std(EMG(1:200, :, :), 0, [1 3]);
 baseline = mean(emgRest, 1);
 
-%% culculate regression
+%% culculate z-index parameters
 for channel = (1:nmuscles)
     Y = tuningCurve(:, channel);
     Ymean = mean(Y);

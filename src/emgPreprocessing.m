@@ -48,8 +48,9 @@ for date=dates
     preprocessedEMGs = emgFiltering(signalData,fs, 0.001, muscleLabel);
     
     preprocessedTrialData = struct.empty(0);
-    
-    for t=(1:length(alldata.trialData)-1)
+    otherTrialData = struct.empty(0);
+    channelLabels = alldata.analogData.channelLabels(8:11);
+    for t=(1:length(alldata.trialData))
         trialData = alldata.trialData(t);
         startTime = ceil((trialData.taskSynchTrialTime-zerotime)*1000);
         endTime = ceil((trialData.taskSynchTrialTime-zerotime)*1000 + max(trialData.time));
@@ -62,10 +63,12 @@ for date=dates
         preprocessedTrialData(t).prop.stateTransition = trialData.stateTable;
         preprocessedTrialData(t).handKinematics = trialData.handKinematics;
         preprocessedTrialData(t).timeInTrial = trialData.time;
+        otherTrialData(t).others = signalData.data(startTime:endTime, 8:11);
     end
     
     emgRest = preprocessedEMGs(1:120*new_fs, :);
     % save('../data/processed/singleTrials_Rocky20220216_movave_50ms.mat', 'preprocessedTrialData', 'muscleLabel', "emg_rest");
     [normalizedTrialData, EMGMetrics] = emgNormalization(preprocessedTrialData, emgRest, muscleLabel);
-    save('../data/normalized/singleTrials_Rocky2022' + date +'_1ms.mat', 'normalizedTrialData', 'EMGMetrics');
+    save('../data/normalized/emg/singleTrials_Rocky2022' + date +'_1ms.mat', 'normalizedTrialData', 'EMGMetrics');
+    save('../data/normalized/others/singleTrials_Rocky2022' + date +'.mat', 'otherTrialData', 'channelLabels');
 end
