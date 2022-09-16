@@ -1,8 +1,31 @@
 clear all
 
 % load('../data/normalized/Rocky20220216to0303_ma50ms_successesOnly.mat');
-load('../data/normalized/emg/Rocky20220216to0303_ma50ms_345.mat');
-%% visualize 
+% load('../data/normalized/emg/Rocky20220216to0303_ma50ms_345.mat');
+
+%% visualize EKG pupil size
+load("../data/processed/singleTrials_Rocky2022to0303.mat");
+startidx = 1;
+for d=(1:length(wholeTrialData.sessionProp))
+    endidx = startidx + wholeTrialData.sessionProp(d).dataSizes-1;
+    trialData = wholeTrialData.data(startidx:endidx);
+    meanPupilSize = zeros(1, 0);
+    for i=(1:length(trialData))
+        if -6000 < mean(trialData(i).others(50:251, 4))
+            meanPupilSize(end+1) = mean(trialData(i).others(50:251, 4));
+        end
+    end
+    startidx = startidx + length(trialData);
+
+    smoothPupilSize = movmean(meanPupilSize, 50);
+    
+    if d == 2 || d == 7
+        figure
+        plot(meanPupilSize, "Color", [0.5 0.5 0.5]);
+        title("Day" + num2str(d))
+    end
+
+end
 
 %% save analog data only file
 % dates = ["0216", "0217", "0218", "0221", "0222", "0223", "0224", "0225", "0228", "0301", "0302", "0303"];
@@ -162,39 +185,39 @@ load('../data/normalized/emg/Rocky20220216to0303_ma50ms_345.mat');
 % hold off
 
 %% EMG variablity as a function of reward
-Y = struct.empty(0);
-for i=(1:4)
-    Y(i).emg = double.empty(0);
-end
-for channel=(5:5)
-    data = exceptionRemovedEMG.data;
-    emg = exceptionRemovedEMG.data.emgs(channel);
-    for direction=(1:8)
-        condition = all([data.directions==direction; emg.exceptions]);
-        rewardArray = data.rewards(condition);
-        fetchedEMG = mean(emg.signals(50:250, condition), 1); %-150~+50ms
-        zScoredEMG = zscore(fetchedEMG);
-        for reward=(1:4)
-            Y(reward).emg = cat(1, Y(reward).emg, zScoredEMG(rewardArray==reward).');
-        end
-    end
-end
-figure
-rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
-edges = (-3.05:0.1:3.05);
-x = (-3:0.1:3);
-for i=(1:size(Y, 2))
-    N = histcounts(Y(i).emg, edges);
-    prob = N / size(Y(i).emg, 1);
-    plot(x, prob, 'Color', rewColors(i, :), LineWidth=2)
-    % set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
-    hold on
-end
-hold off
-legend({'Small', 'Medium', 'Large', 'Jackpot'});
-xlabel("z-indexed emg")
-gca.YAxis.Visible = 'off';
-box off;
+% Y = struct.empty(0);
+% for i=(1:4)
+%     Y(i).emg = double.empty(0);
+% end
+% for channel=(5:5)
+%     data = exceptionRemovedEMG.data;
+%     emg = exceptionRemovedEMG.data.emgs(channel);
+%     for direction=(1:8)
+%         condition = all([data.directions==direction; emg.exceptions]);
+%         rewardArray = data.rewards(condition);
+%         fetchedEMG = mean(emg.signals(50:250, condition), 1); %-150~+50ms
+%         zScoredEMG = zscore(fetchedEMG);
+%         for reward=(1:4)
+%             Y(reward).emg = cat(1, Y(reward).emg, zScoredEMG(rewardArray==reward).');
+%         end
+%     end
+% end
+% figure
+% rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
+% edges = (-3.05:0.1:3.05);
+% x = (-3:0.1:3);
+% for i=(1:size(Y, 2))
+%     N = histcounts(Y(i).emg, edges);
+%     prob = N / size(Y(i).emg, 1);
+%     plot(x, prob, 'Color', rewColors(i, :), LineWidth=2)
+%     % set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+%     hold on
+% end
+% hold off
+% legend({'Small', 'Medium', 'Large', 'Jackpot'});
+% xlabel("z-indexed emg")
+% gca.YAxis.Visible = 'off';
+% box off;
 
 %% mean trajectories around Go Cue(-200~+600) as a function of direction
 % for channel=(1:5)
