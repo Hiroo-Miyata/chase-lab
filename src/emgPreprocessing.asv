@@ -31,7 +31,8 @@
 %   - maxSignalTuningCurve_std = [nmuscles x ndirections+1]
 %   - maxSNR = [nmuscles x 1] (peak avg activity)/(baseline)
 dates = ["0216", "0217", "0218", "0221", "0222", "0223", "0224", "0225", "0228", "0301", "0302", "0303"];
-for date=dates
+for d=(1:length(dates))
+    date = dates(d);
     file = dir('../data/synchronized/*2022' +date+ '*.mat');
     alldata = load("../data/synchronized/" + file.name);
     signalData = alldata.analogData;
@@ -50,7 +51,8 @@ for date=dates
     preprocessedTrialData = struct.empty(0);
     otherTrialData = struct.empty(0);
     channelLabels = alldata.analogData.channelLabels(8:11);
-
+    
+    clear downsampledSignalData
     downsampledSignalData(:, 1) = ecgPreprocessing(signalData.data(:, 8),fs);
     downsampledSignalData(:, 2:4) = downsample(signalData.data(:, 9:11),round(fs/new_fs));
 
@@ -75,11 +77,16 @@ for date=dates
     [normalizedTrialData, EMGMetrics] = emgNormalization(preprocessedTrialData, emgRest, muscleLabel);
     
 
+
     for i=(1:length(normalizedTrialData))
+        
+
         if d == 1
             normalizedTrialData(i).goodEMGData = EMGMetrics.muscleNames ~= "Trap";
         elseif d == 6 || d == 7 || d == 8
             normalizedTrialData(i).goodEMGData = EMGMetrics.muscleNames ~= "Tric";
+            if d == 7
+                
         elseif d == 9
             condition = any([EMGMetrics.muscleNames == "Tric"; EMGMetrics.muscleNames == "LBic"; EMGMetrics.muscleNames == "PDel"]);
             normalizedTrialData(i).goodEMGData = ~condition;

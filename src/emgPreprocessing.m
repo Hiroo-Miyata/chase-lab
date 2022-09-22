@@ -85,9 +85,18 @@ for d=(1:length(dates))
             normalizedTrialData(i).goodEMGData = EMGMetrics.muscleNames ~= "Trap";
         elseif d == 6 || d == 7 || d == 8
             normalizedTrialData(i).goodEMGData = EMGMetrics.muscleNames ~= "Tric";
+            if d == 7
+                if i > 700 && i < 900
+                    normalizedTrialData(i).goodEMGData(2) = false;
+                end
+            end
         elseif d == 9
             condition = any([EMGMetrics.muscleNames == "Tric"; EMGMetrics.muscleNames == "LBic"; EMGMetrics.muscleNames == "PDel"]);
             normalizedTrialData(i).goodEMGData = ~condition;
+        elseif d == 11
+            if i > 150 && i < 300
+                normalizedTrialData(i).goodEMGData(5) = false;
+            end
         elseif d == 12
             normalizedTrialData(i).goodEMGData = EMGMetrics.muscleNames ~= "Trap";
         else
