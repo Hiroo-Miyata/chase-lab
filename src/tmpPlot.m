@@ -89,7 +89,6 @@ close all
 %     legend(meanplot, legendLabel);
 % end
 
-
 %% choking paper figures: probability distribution of each muscle as a function of rewards
 % load("../data/processed/singleTrials_Rocky2022to0303.mat");
 % 
@@ -132,45 +131,85 @@ close all
 % end
 
 %% Choking paper figure: average trajectory of each direction and muscle as a function of rewards
-load("../data/processed/singleTrials_Rocky2022to0303_0922.mat");
+% load("../data/processed/singleTrials_Rocky2022to0303_0922.mat");
+% 
+% kinematicsData = [wholeTrialData.data.kinematics];
+% EMGData = [wholeTrialData.data.emg];
+% directionArray = [kinematicsData.directionLabel];
+% rewardArray = [kinematicsData.rewardLabel];
+% goodEMGMatrix = vertcat(EMGData.goodEMGData);
+% for direction=(1:8)
+%     for muscle=([1:5])
+%         Y = zeros(801, 4);
+%         for reward=(1:4)
+%             condition = all([directionArray==direction;rewardArray==reward;goodEMGMatrix(:, muscle).']);
+%             selectedTrialData = wholeTrialData.data(condition);
+%             emgdata = [selectedTrialData.emg];
+%             emgs = cat(3, emgdata.EMG); 
+%             Y(:, reward) = movmean(mean(emgs(:, muscle, :), 3), 100);
+%             for singleTrialData = selectedTrialData
+%                 if singleTrialData.kinematics.directionLabel ~= direction && ...
+%                         singleTrialData.kinematics.rewardLabel ~= reward && ...
+%                         singleTrialData.emg.goodEMGData(muscle) ~= 1
+%                     error('incorrect label is included')
+%                 end
+%             end
+%         end
+%         plot((-200:600), Y, lineWidth=2);
+%         rawColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
+%         colororder(rawColors);
+%         set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+%         xticks([-200, 0, 600]);
+%         xticklabels({'-200', 'GC', '600'});
+%         box('off');
+%         title(['average ' + wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) + ' of all ' + num2str((direction-1)*45) + ' degree trials'; ...
+%             'as a function of rewards'])
+%         saveas(gcf, "../result/images/202209w3/meanTrajectoryOfEachdirection_smoothNorm/" + ...
+%             wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) + "-" + num2str((direction-1)*45) + ".jpg");
+%         close all
+%     end
+% end
 
-kinematicsData = [wholeTrialData.data.kinematics];
-EMGData = [wholeTrialData.data.emg];
-directionArray = [kinematicsData.directionLabel];
-rewardArray = [kinematicsData.rewardLabel];
-goodEMGMatrix = vertcat(EMGData.goodEMGData);
-for direction=(1:8)
-    for muscle=([2:5])
-        Y = zeros(801, 4);
-        for reward=(1:4)
-            condition = all([directionArray==direction;rewardArray==reward;goodEMGMatrix(:, muscle).']);
-            selectedTrialData = wholeTrialData.data(condition);
-            emgdata = [selectedTrialData.emg];
-            emgs = cat(3, emgdata.EMG); 
-            Y(:, reward) = movmean(mean(emgs(:, muscle, :), 3), 100);
-            for singleTrialData = selectedTrialData
-                if singleTrialData.kinematics.directionLabel ~= direction && ...
-                        singleTrialData.kinematics.rewardLabel ~= reward && ...
-                        singleTrialData.emg.goodEMGData(muscle) ~= 1
-                    error('incorrect label is included')
-                end
-            end
-        end
-        plot((-200:600), Y, lineWidth=2);
-        rawColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
-        colororder(rawColors);
-        set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
-        xticks([-200, 0, 600]);
-        xticklabels({'-200', 'GC', '600'});
-        box('off');
-        title(['average ' + wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) + ' of all ' + num2str((direction-1)*45) + ' degree trials'; ...
-            'as a function of rewards'])
-        saveas(gcf, "../result/images/202209w3/meanTrajectoryOfEachdirection_smoothNorm/" + ...
-            wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) + "-" + num2str((direction-1)*45) + ".jpg");
-        close all
-    end
-end
-    
+%% EMG tuning curve at holding time as a function of reward and direction 
+% load("../data/processed/singleTrials_Rocky2022to0303_0922.mat");
+% 
+% kinematicsData = [wholeTrialData.data.kinematics];
+% EMGData = [wholeTrialData.data.emg];
+% directionArray = [kinematicsData.directionLabel];
+% rewardArray = [kinematicsData.rewardLabel];
+% goodEMGMatrix = vertcat(EMGData.goodEMGData);
+% for muscle=(1:5)
+%     Y = zeros(8,4);
+%     Yerror = zeros(8,4);
+%     for direction=(1:8)
+%         for reward=(1:4)
+%             condition = all([directionArray==direction;rewardArray==reward;goodEMGMatrix(:, muscle).']);
+%             selectedTrialData = wholeTrialData.data(condition);
+%             emgdata = [selectedTrialData.emg];
+%             emgs = cat(3, emgdata.EMG); 
+%             meanEMGHT = mean(emgs(50:250, muscle, :), 1);
+%             Y(direction, reward) =mean(meanEMGHT);
+%             Yerror(direction, reward) =std(meanEMGHT)/sqrt(length(meanEMGHT));
+%             for singleTrialData = selectedTrialData
+%                 if singleTrialData.kinematics.directionLabel ~= direction && ...
+%                         singleTrialData.kinematics.rewardLabel ~= reward && ...
+%                         singleTrialData.emg.goodEMGData(muscle) ~= 1
+%                     error('incorrect label is included')
+%                 end
+%             end
+%         end
+%     end
+%     figure
+%     errorbar(Y, Yerror,'linewidth',2);
+%     legend(["Small", "Medium", "Large", "Jackpot"], Location="southwest")
+%     rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
+%     colororder(rewColors);
+%     set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+%     xticks([1 2 3 4 5 6 7 8]);
+%     xticklabels({'0', '45', '90', '135', '180', '225', '270', '325'});
+%     xlim([0.5 8.5]);
+%     title(wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle));
+% end
 
 %% visualize EKG pupil size
 % load("../data/processed/singleTrials_Rocky2022to0303.mat");
@@ -196,45 +235,100 @@ end
 % end
 
 %% important process: save analog data only file
+dates = ["0216", "0217", "0218", "0221", "0222", "0223", "0224", "0225", "0228", "0301", "0302", "0303"];
+
+wholeTrialData.data = struct.empty(0);
+wholeTrialData.sessionProp = struct.empty(0);
+delayperiod = [];
+for i=(1:length(dates))
+    date = dates(i);
+    file = dir('../data/synchronized/*2022' +date+ '*.mat');
+    load("../data/synchronized/" + file.name);
+    load('../data/normalized/emg/singleTrials_Rocky2022' + date +'_1ms.mat');
+    load('../data/normalized/others/singleTrials_Rocky2022' + date +'.mat');
+    [selectedTrialData,selectedArray] = selectStateTransition(trialData, []);
+
+    normalizedEMGData = normalizedTrialData(selectedArray);
+    otherTrialData = otherTrialData(selectedArray);
+
+
+    wholeTrialData.sessionProp(i).EMGMetrics = EMGMetrics;
+    wholeTrialData.sessionProp(i).otherChannels = channelLabels;
+    wholeTrialData.sessionProp(i).dataSizes = length(selectedTrialData);
+    l = length(wholeTrialData.data);
+    timewindow = 801;
+    for s=(1:length(selectedTrialData))
+        stateTransition = selectedTrialData(s).stateTable;
+%         TargetOnsetTime = stateTransition(2, find(stateTransition(1, :)==3));
+        GoCueTime = stateTransition(2, find(stateTransition(1, :)==4));
+        % start: -200ms end: +600ms at GoCue
+        wholeTrialData.data(l+s).emg.EMG = normalizedEMGData(s).EMG(GoCueTime-200:GoCueTime+timewindow-201, :);
+        wholeTrialData.data(l+s).emg.goodEMGData = normalizedEMGData(s).goodEMGData;
+        % GoCueTime-200:GoCueTime+600をそれぞれTime関数から取得しindexに変換する
+        movementStartTime = find(selectedTrialData(s).time == GoCueTime);
+        selectedTrialData(s).handKinematics = selectedTrialData(s).handKinematics.velocity(movementStartTime-200:movementStartTime+timewindow-201, :);
+        
+        wholeTrialData.data(l+s).others = otherTrialData(s).others(GoCueTime-200:GoCueTime+timewindow-201, :);
+        
+        wholeTrialData.data(l+s).kinematics = selectedTrialData(s);
+    end
+end
+save("../data/processed/singleTrials_Rocky2022to0303_0922_all.mat", "wholeTrialData")
+
+%% show normalized EMG each day
+% load("../data/processed/singleTrials_Rocky2022to0303_0922.mat");
+% 
+% startidx=1;
+% 
+% for day=(1:length(wholeTrialData.sessionProp))
+%     endidx = wholeTrialData.sessionProp(day).dataSizes;
+%     trialDataByDay = wholeTrialData.data(startidx:startidx+endidx-1);
+%     for muscle=(1:5)
+%         emgData = [trialDataByDay.emg];
+%         emgSignal = cat(3, emgData.EMG); % 801 * 5 * ntrial
+%         meanEMGAcrossSession = mean(emgSignal(:, muscle, :), 1);
+%         Y = reshape(meanEMGAcrossSession, length(meanEMGAcrossSession), 1);
+%         figure
+%         plot(Y);
+%         set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+%         saveas(gcf, "../result/images/202209w3/NormalizedEMGAcrossSession/" + ...
+%             wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) + "-Day" + num2str(day)+".jpg");
+%         close all
+%     end
+%     startidx=startidx+endidx;
+% end
+
+
+%% show normalized EMG each day
+% load("../data/processed/singleTrials_Rocky2022to0303_0922.mat");
 % dates = ["0216", "0217", "0218", "0221", "0222", "0223", "0224", "0225", "0228", "0301", "0302", "0303"];
 % 
-% wholeTrialData.data = struct.empty(0);
-% wholeTrialData.sessionProp = struct.empty(0);
-% delayperiod = [];
-% for i=(1:length(dates))
-%     date = dates(i);
-%     file = dir('../data/synchronized/*2022' +date+ '*.mat');
-%     load("../data/synchronized/" + file.name);
-%     load('../data/normalized/emg/singleTrials_Rocky2022' + date +'_1ms.mat');
-%     load('../data/normalized/others/singleTrials_Rocky2022' + date +'.mat');
-%     [selectedTrialData,selectedArray] = selectStateTransition(trialData, [3 4 5]);
-% 
-%     normalizedEMGData = normalizedTrialData(selectedArray);
-%     otherTrialData = otherTrialData(selectedArray);
-% 
-% 
-%     wholeTrialData.sessionProp(i).EMGMetrics = EMGMetrics;
-%     wholeTrialData.sessionProp(i).otherChannels = channelLabels;
-%     wholeTrialData.sessionProp(i).dataSizes = length(selectedTrialData);
-%     l = length(wholeTrialData.data);
-%     timewindow = 801;
-%     for s=(1:length(selectedTrialData))
-%         stateTransition = selectedTrialData(s).stateTable;
-% %         TargetOnsetTime = stateTransition(2, find(stateTransition(1, :)==3));
-%         GoCueTime = stateTransition(2, find(stateTransition(1, :)==4));
-%         % start: -200ms end: +600ms at GoCue
-%         wholeTrialData.data(l+s).emg.EMG = normalizedEMGData(s).EMG(GoCueTime-200:GoCueTime+timewindow-201, :);
-%         wholeTrialData.data(l+s).emg.goodEMGData = normalizedEMGData(s).goodEMGData;
-%         % GoCueTime-200:GoCueTime+600をそれぞれTime関数から取得しindexに変換する
-%         movementStartTime = find(selectedTrialData(s).time == GoCueTime);
-%         selectedTrialData(s).handKinematics = selectedTrialData(s).handKinematics.velocity(movementStartTime-200:movementStartTime+timewindow-201, :);
-%         
-%         wholeTrialData.data(l+s).others = otherTrialData(s).others(GoCueTime-200:GoCueTime+timewindow-201, :);
-%         
-%         wholeTrialData.data(l+s).kinematics = selectedTrialData(s);
+% NormalizedProp = [wholeTrialData.sessionProp.EMGMetrics];
+% tuningCurveData = cat(3, NormalizedProp.maxSignalTuningCurve_mean);
+% for muscle=(1:5) 
+%     figure
+%     rawY = reshape(tuningCurveData(:, muscle, :), 9, []);
+%     Y = zeros(size(rawY));
+%     for day=(1:size(rawY,2))
+%         param = NormalizedProp(day).normalizedParams(:, muscle);
+%         Y(:, day) = (rawY(:, day) - param(1)) / param(2);
 %     end
+% 
+%     plot(Y,'linewidth',2);
+%     legend(["Small", "Medium", "Large", "Jackpot"], Location="southwest")
+%     rewColors = [0 0 0;0 0 .66;0 0 .33;0 0 1;0 .66 0;0 .33 0;0 1 0;.66 0 0;.33 0 0;1 0 0;0 1 0.66;0 0.66 1];
+%     colororder(rewColors);
+%     set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+%     xticks([1 2 3 4 5 6 7 8 9]);
+%     xticklabels({'0', '45', '90', '135', '180', '225', '270', '325', 'hold'});
+%     xlim([0.5 8.5]);
+%     title(wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle));
+%     legend(dates)
+%     saveas(gcf, "../result/images/202209w3/TuningCurveNormalization/" + ...
+%         wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) + ".jpg");
+%     close all
 % end
-% save("../data/processed/singleTrials_Rocky2022to0303_0922.mat", "wholeTrialData")
+
 
 %% get maxVelosity data
 % movement = exceptionRemovedEMG.data.kinematics.integratedVelosities; % timewindow * N
