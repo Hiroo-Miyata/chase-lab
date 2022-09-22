@@ -1,8 +1,31 @@
-% clear all
+clear all
 close all
 
 % load('../data/normalized/Rocky20220216to0303_ma50ms_successesOnly.mat');
 % load('../data/normalized/emg/Rocky20220216to0303_ma50ms_345.mat');
+
+
+%% check abnormal EMG 
+% load("../data/processed/singleTrials_Rocky2022to0303.mat");
+% 
+% kinematicsData = [wholeTrialData.data.kinematics];
+% EMGData = [wholeTrialData.data.emg];
+% rewardArray = [kinematicsData.rewardLabel];
+% goodEMGMatrix = vertcat(EMGData.goodEMGData);
+% idx = (1:length(wholeTrialData.data));
+% for muscle=(2:2)
+%     selectedTrialData = wholeTrialData.data(goodEMGMatrix(:, muscle).');
+%     selectedidx = idx(goodEMGMatrix(:, muscle).');
+%     idx2 = (1:length(selectedTrialData));
+%     emgdata = [selectedTrialData.emg];
+%     emgs = cat(3, emgdata.EMG); 
+%     Y = mean(emgs(50:250, muscle, :), 1);
+%     erroridx = selectedidx(find(Y > -2.2));
+%     erroridx2 = idx2(find(Y > -2.2));
+%     errorEMG = emgs(:, muscle, erroridx2);
+%     errorEMG = reshape(errorEMG, size(errorEMG, 1), []);
+%     plot(movmean(errorEMG, 100))
+% end
 
 %% correlation coeffecient b/w EMG and reward Axis
 % load('../data/processed/Rocky_rewProjDataByDay.mat');
@@ -44,27 +67,27 @@ close all
 %     end
 %     startidx=startidx+length(rewardAxises);
 % end
-
-rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
-for muscle=(1:1)
-    figure
-    legendLabel = ["", "", "", ""];
-    for reward=(1:4)
-        scatter(Y{reward, muscle}, X{reward, muscle}, 4, rewColors(reward, :), ...
-            'filled', 'MarkerEdgeAlpha', .1, 'MarkerFaceAlpha',.1);
-        hold on
-        meanplot(reward) = scatter(mean(Y{reward, muscle}), mean(X{reward, muscle}), 75, rewColors(reward, :), ...
-            'filled');
-        hold on
-        r=corrcoef(Y{reward, muscle}, X{reward, muscle});
-        legendLabel(reward) = "r_small=" + num2str(r(1,2));
-    end
-    hold off
-    xlabel('Reward Axis');
-    ylabel('average EMG around GoCue');
-    title('Relationship Between RewardAxis and mean EMG');
-    legend(meanplot, legendLabel);
-end
+% rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
+% for muscle=(5:5)
+%     figure
+%     legendLabel = ["", "", "", ""];
+%     rewardLabel = ["S", "M", "L", "J"];
+%     for reward=(1:4)
+%         scatter(Y{reward, muscle}, X{reward, muscle}, 4, rewColors(reward, :), ...
+%             'filled', 'MarkerEdgeAlpha', .1, 'MarkerFaceAlpha',.1);
+%         hold on
+%         meanplot(reward) = scatter(mean(Y{reward, muscle}), mean(X{reward, muscle}), 75, rewColors(reward, :), ...
+%             'filled');
+%         hold on
+%         r=corrcoef(Y{reward, muscle}, X{reward, muscle});
+%         legendLabel(reward) = "r_" + rewardLabel(reward) + " = "+ num2str(round(r(1,2), 2));
+%     end
+%     hold off
+%     ylabel('Reward Axis');
+%     xlabel('average EMG around GoCue');
+%     title('Relationship Between RewardAxis and mean ' + wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle));
+%     legend(meanplot, legendLabel);
+% end
 
 
 %% choking paper figures: probability distribution of each muscle as a function of rewards
@@ -74,7 +97,7 @@ end
 % EMGData = [wholeTrialData.data.emg];
 % rewardArray = [kinematicsData.rewardLabel];
 % goodEMGMatrix = vertcat(EMGData.goodEMGData);
-% for muscle=(3:3)
+% for muscle=(5:5)
 %     Y = cell(4, 1);
 %     for reward=(1:4)
 %         condition = all([rewardArray==reward;goodEMGMatrix(:, muscle).']);
@@ -91,8 +114,8 @@ end
 %     end
 %     figure
 %     rawColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
-%     edges = (-3.025:0.05:0.025);
-%     x = (-3:0.05:0);
+%     edges = (-3.025:0.05:2.025);
+%     x = (-3:0.05:2);
 %     for i=(1:4)
 %         N = histcounts(Y{i}, edges);
 %         prob = N / length(Y{i});
@@ -591,32 +614,71 @@ end
 % xlim([0.5 8.5]);
 
 %% EMG tuning curve at holding time as a function of reward and direction 
-% for channel=(5:5)
-%     data = exceptionRemovedEMG.data;
-%     emg = exceptionRemovedEMG.data.emgs(channel);
-%     Y = zeros(8,4);
-%     Yerror = zeros(8,4);
-%     datapoint = zeros(8,4);
-%     for reward=(1:4)
-%         for direction=(1:8)
-%             condition = all([data.directions==direction; data.rewards==reward; emg.exceptions]);
-%             EMGtmp = emg.signals(50:250, condition);
-%             meanOneDirectionEMG = mean(EMGtmp, 2);
-%             meanIntensitysAtOneDirection = mean(meanOneDirectionEMG);
-%             standardError = std(meanOneDirectionEMG) / sqrt(size(EMGtmp, 2));
-%             Y(direction, reward) = meanIntensitysAtOneDirection;
-%             Yerror(direction, reward) = standardError;
-%             datapoint(direction, reward) = size(EMGtmp, 2);
-%         end
-%     end
-%     figure
-%     errorbar(Y, Yerror,'linewidth',2);
-%     title(emg.name);
-%     legend(["Small", "Medium", "Large", "Jackpot"], Location="southwest")
-%     rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
-%     colororder(rewColors);
-%     set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
-%     xticks([1 2 3 4 5 6 7 8]);
-%     xticklabels({'0', '45', '90', '135', '180', '225', '270', '325'});
-%     xlim([0.5 8.5]);
-% end
+
+
+load("../data/processed/singleTrials_Rocky2022to0303.mat");
+
+kinematicsData = [wholeTrialData.data.kinematics];
+EMGData = [wholeTrialData.data.emg];
+directionArray = [kinematicsData.directionLabel];
+rewardArray = [kinematicsData.rewardLabel];
+goodEMGMatrix = vertcat(EMGData.goodEMGData);
+for muscle=(4:4)
+    Y = zeros(8,4,5)
+    for direction=(1:8)
+        for reward=(1:4)
+            condition = all([directionArray==direction;rewardArray==reward;goodEMGMatrix(:, muscle).']);
+            selectedTrialData = wholeTrialData.data(condition);
+            emgdata = [selectedTrialData.emg];
+            emgs = cat(3, emgdata.EMG); 
+            Y(direction, reward, muscle) = mean(emgs(50:250, muscle, :), 1);
+            for singleTrialData = selectedTrialData
+                if singleTrialData.kinematics.directionLabel == direction && ...
+                        singleTrialData.kinematics.rewardLabel == reward && ...
+                        singleTrialData.emg.goodEMGData(muscle) == 1
+                    error('incorrect label is included')
+                end
+            end
+        end
+        figure
+        plot((-200:600), Y, lineWidth=2);
+        rawColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
+        colororder(rawColors);
+        set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+        xticks([-200, 0, 600]);
+        xticklabels({'-200', 'GC', '600'});
+        box('off');
+        title(['average ' + wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) + ' of all ' + num2str((direction-1)*45) + ' degree trials'; ...
+            'as a function of rewards'])
+    end
+end
+
+for channel=(5:5)
+    data = exceptionRemovedEMG.data;
+    emg = exceptionRemovedEMG.data.emgs(channel);
+    Y = zeros(8,4);
+    Yerror = zeros(8,4);
+    datapoint = zeros(8,4);
+    for reward=(1:4)
+        for direction=(1:8)
+            condition = all([data.directions==direction; data.rewards==reward; emg.exceptions]);
+            EMGtmp = emg.signals(50:250, condition);
+            meanOneDirectionEMG = mean(EMGtmp, 2);
+            meanIntensitysAtOneDirection = mean(meanOneDirectionEMG);
+            standardError = std(meanOneDirectionEMG) / sqrt(size(EMGtmp, 2));
+            Y(direction, reward) = meanIntensitysAtOneDirection;
+            Yerror(direction, reward) = standardError;
+            datapoint(direction, reward) = size(EMGtmp, 2);
+        end
+    end
+    figure
+    errorbar(Y, Yerror,'linewidth',2);
+    title(emg.name);
+    legend(["Small", "Medium", "Large", "Jackpot"], Location="southwest")
+    rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
+    colororder(rewColors);
+    set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+    xticks([1 2 3 4 5 6 7 8]);
+    xticklabels({'0', '45', '90', '135', '180', '225', '270', '325'});
+    xlim([0.5 8.5]);
+end

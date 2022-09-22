@@ -77,7 +77,10 @@ for d=(1:length(dates))
     [normalizedTrialData, EMGMetrics] = emgNormalization(preprocessedTrialData, emgRest, muscleLabel);
     
 
+
     for i=(1:length(normalizedTrialData))
+        
+
         if d == 1
             normalizedTrialData(i).goodEMGData = EMGMetrics.muscleNames ~= "Trap";
         elseif d == 6 || d == 7 || d == 8

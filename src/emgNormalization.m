@@ -42,7 +42,8 @@ end
 %% get averages of peak values
 for direction=(1:8)
     oneDirectionEMG = EMG(:,:,directionArray==direction);
-    MaxIntensitysAtOneDirection = max(oneDirectionEMG, [], 1);
+    movmeanDirectionEMG = movmean(oneDirectionEMG, 100, 1);
+    MaxIntensitysAtOneDirection = max(movmeanDirectionEMG, [], 1);
     tuningCurve(direction, :) = mean(MaxIntensitysAtOneDirection, 3);
     tuningCurveStd(direction, :) = std(MaxIntensitysAtOneDirection, 0, 3);
 end
