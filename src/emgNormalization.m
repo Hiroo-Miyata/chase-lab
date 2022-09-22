@@ -65,7 +65,7 @@ for i=(1:length(preprocessedTrialData))
     for channel = (1:nmuscles)
         normalizedTrialData(i).EMG(:, channel) = (preprocessedTrialData(i).emg(:, channel) - normalizedParams(1, channel)) ./ normalizedParams(2, channel);
     end
-    normalizedTrialData(i).goodEMGData = true(nmuscles, 1); %改善が必要
+    normalizedTrialData(i).goodEMGData = true(1, nmuscles);
 end
 
 EMGMetrics = struct();
