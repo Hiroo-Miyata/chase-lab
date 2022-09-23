@@ -25,33 +25,36 @@ for day=(1:length(wholeTrialData.sessionProp))
                 emgdata = [selectedTrialData.emg];
                 emgs = cat(3, emgdata.EMG); % 801 * 5 * ntrial
                 emgs = reshape(emgs(:, muscle, :), 801, []);
+                smoothedEMG = movmean(emgs, 100, 1);
+                maxEMG = max(smoothedEMG, [], 1);
     
-                kinematicsData = [selectedTrialData.kinematics];
-                handMovementData = cat(3, kinematicsData.handKinematics); % 801 * 3 * ntrial
-                synthesisVelocities = rssq(handMovementData, 2); % 801 * ntrial
-                [maxVelosityMagnitudes, maxVelosityIndexs] = max(synthesisVelocities, [], 1); % should be 1*N
-                normals = true(length(maxVelosityIndexs), 1);
-                for i=(1:length(maxVelosityIndexs))
-                    if maxVelosityIndexs(i) < 300+200
-                        normals(i) = false;
-                    elseif maxVelosityIndexs(i) > 750
-                        normals(i) = false;
-                    end
-                end
-                idx = maxVelosityIndexs(normals);
-                processedEMG = emgs(:, normals);
-                
-                Y = zeros(size(processedEMG, 2), 1);
-                for i=(1:size(processedEMG, 2))
-                    Y(i) = mean(processedEMG(idx(i)-50:idx(i)+50, i));
-                end
+%                 kinematicsData = [selectedTrialData.kinematics];
+%                 handMovementData = cat(3, kinematicsData.handKinematics); % 801 * 3 * ntrial
+%                 synthesisVelocities = rssq(handMovementData, 2); % 801 * ntrial
+%                 [maxVelosityMagnitudes, maxVelosityIndexs] = max(synthesisVelocities, [], 1); % should be 1*N
+%                 normals = true(length(maxVelosityIndexs), 1);
+%                 for i=(1:length(maxVelosityIndexs))
+%                     if maxVelosityIndexs(i) < 300+200
+%                         normals(i) = false;
+%                     elseif maxVelosityIndexs(i) > 750
+%                         normals(i) = false;
+%                     end
+%                 end
+%                 idx = maxVelosityIndexs(normals);
+%                 processedEMG = emgs(:, normals);
+%                 
+%                 Y = zeros(size(processedEMG, 2), 1);
+%                 for i=(1:size(processedEMG, 2))
+%                     Y(i) = mean(processedEMG(idx(i)-50:idx(i)+50, i));
+%                 end
+                Y = maxEMG;
     
                 figure
                 plot(Y);
                 title(wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) + "-Day" + num2str(day) ...
                     + "-" + num2str(direction*45-45))
                 set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
-                saveas(gcf, "../result/images/202209w3/periMovementEMGEachDirection/" + ...
+                saveas(gcf, "../result/images/202209w3/periMovementEMGEachDirection/max" + ...
                     wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) + "-Day" + num2str(day) ...
                     + "-" + num2str(direction*45-45)+".jpg");
                 close all
