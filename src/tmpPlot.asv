@@ -5,80 +5,83 @@ close all
 % load('../data/normalized/emg/Rocky20220216to0303_ma50ms_345.mat');
 
 %% Fatigue: Peri-movement EMG change across session
-load("../data/processed/singleTrials_Rocky2022to0303_0922.mat");
-
-startidx=1;
-
-allY = cell(5,1);
-for day=(1:length(wholeTrialData.sessionProp))
-    endidx = wholeTrialData.sessionProp(day).dataSizes;
-    trialDataByDay = wholeTrialData.data(startidx:startidx+endidx-1);
-    kinematicsData = [trialDataByDay.kinematics];
-    EMGData = [trialDataByDay.emg];
-    directionArray = [kinematicsData.directionLabel];
-    goodEMGMatrix = vertcat(EMGData.goodEMGData);
-    for direction=(1:8)
-        for muscle=(1:5)
-            condition = all([directionArray==direction;goodEMGMatrix(:, muscle).']);
-            selectedTrialData = trialDataByDay(condition);
-            if ~isempty(selectedTrialData)
-                emgdata = [selectedTrialData.emg];
-                emgs = cat(3, emgdata.EMG); % 801 * 5 * ntrial
-                emgs = reshape(emgs(:, muscle, :), 801, []);
-    
-%                 kinematicsData = [selectedTrialData.kinematics];
-%                 handMovementData = cat(3, kinematicsData.handKinematics); % 801 * 3 * ntrial
-%                 synthesisVelocities = rssq(handMovementData, 2); % 801 * ntrial
-%                 [maxVelosityMagnitudes, maxVelosityIndexs] = max(synthesisVelocities, [], 1); % should be 1*N
-%                 normals = true(length(maxVelosityIndexs), 1);
-%                 for i=(1:length(maxVelosityIndexs))
-%                     if maxVelosityIndexs(i) < 300+200
-%                         normals(i) = false;
-%                     elseif maxVelosityIndexs(i) > 750
-%                         normals(i) = false;
-%                     end
-%                 end
-                idx = maxVelosityIndexs(normals);
-                processedEMG = emgs(:, normals);
-                
-                Y = zeros(size(processedEMG, 2), 1);
-                for i=(1:size(processedEMG, 2))
-                    Y(i) = mean(processedEMG(idx(i)-50:idx(i)+50, i));
-                end
-    
-                figure
-                plot(Y);
-                title(wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) + "-Day" + num2str(day) ...
-                    + "-" + num2str(direction*45-45))
-                set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
-                saveas(gcf, "../result/images/202209w3/periMovementEMGEachDirection/" + ...
-                    wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) + "-Day" + num2str(day) ...
-                    + "-" + num2str(direction*45-45)+".jpg");
-                close all
-                
-                idxBin = round(0.2*length(Y));
-                changeRatio = mean(Y(end-idxBin+1:end)) / mean(Y(1:idxBin));
-                allY{muscle}(end+1) = changeRatio;
-            end
-        end
-    end
-    startidx=startidx+endidx;
-end
-xlabels = string.empty(0);
-for muscle=(1:5)
-    scatter(muscle * ones(size(allY{muscle})), allY{muscle}, '*', "b");
-    hold on
-    xlabels(end+1) = wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle);
-    scatter(muscle, mean(allY{muscle}), '*', "r");
-    [h,p] = ttest(allY{muscle});
-    disp(p)
-end
-set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out', "LineWidth", 2);
-ylabel("last 20% EMG / first 20% EMG")
-xlim([0.5 5.5])
-xticklabels(xlabels)
-yline(1)
-hold off
+% load("../data/processed/singleTrials_Rocky2022to0303_0922.mat");
+% 
+% startidx=1;
+% 
+% allY = cell(5,1);
+% for day=(1:length(wholeTrialData.sessionProp))
+%     endidx = wholeTrialData.sessionProp(day).dataSizes;
+%     trialDataByDay = wholeTrialData.data(startidx:startidx+endidx-1);
+%     kinematicsData = [trialDataByDay.kinematics];
+%     EMGData = [trialDataByDay.emg];
+%     directionArray = [kinematicsData.directionLabel];
+%     goodEMGMatrix = vertcat(EMGData.goodEMGData);
+%     for direction=(1:8)
+%         for muscle=(1:5)
+%             condition = all([directionArray==direction;goodEMGMatrix(:, muscle).']);
+%             selectedTrialData = trialDataByDay(condition);
+%             if ~isempty(selectedTrialData)
+%                 emgdata = [selectedTrialData.emg];
+%                 emgs = cat(3, emgdata.EMG); % 801 * 5 * ntrial
+%                 emgs = reshape(emgs(:, muscle, :), 801, []);
+%                 smoothedEMG = movmean(emgs, 100, 1);
+%                 maxEMG = max(smoothedEMG, [], 1);
+%     
+% %                 kinematicsData = [selectedTrialData.kinematics];
+% %                 handMovementData = cat(3, kinematicsData.handKinematics); % 801 * 3 * ntrial
+% %                 synthesisVelocities = rssq(handMovementData, 2); % 801 * ntrial
+% %                 [maxVelosityMagnitudes, maxVelosityIndexs] = max(synthesisVelocities, [], 1); % should be 1*N
+% %                 normals = true(length(maxVelosityIndexs), 1);
+% %                 for i=(1:length(maxVelosityIndexs))
+% %                     if maxVelosityIndexs(i) < 300+200
+% %                         normals(i) = false;
+% %                     elseif maxVelosityIndexs(i) > 750
+% %                         normals(i) = false;
+% %                     end
+% %                 end
+% %                 idx = maxVelosityIndexs(normals);
+% %                 processedEMG = emgs(:, normals);
+% %                 
+% %                 Y = zeros(size(processedEMG, 2), 1);
+% %                 for i=(1:size(processedEMG, 2))
+% %                     Y(i) = mean(processedEMG(idx(i)-50:idx(i)+50, i));
+% %                 end
+%                 Y = maxEMG;
+%     
+%                 figure
+%                 plot(Y);
+%                 title(wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) + "-Day" + num2str(day) ...
+%                     + "-" + num2str(direction*45-45))
+%                 set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out');
+%                 saveas(gcf, "../result/images/202209w3/periMovementEMGEachDirection/max" + ...
+%                     wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) + "-Day" + num2str(day) ...
+%                     + "-" + num2str(direction*45-45)+".jpg");
+%                 close all
+%                 
+%                 idxBin = round(0.2*length(Y));
+%                 changeRatio = mean(Y(end-idxBin+1:end)) / mean(Y(1:idxBin));
+%                 allY{muscle}(end+1) = changeRatio;
+%             end
+%         end
+%     end
+%     startidx=startidx+endidx;
+% end
+% xlabels = string.empty(0);
+% for muscle=(1:5)
+%     scatter(muscle * ones(size(allY{muscle})), allY{muscle}, '*', "b");
+%     hold on
+%     xlabels(end+1) = wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle);
+%     scatter(muscle, mean(allY{muscle}), '*', "r");
+%     [h,p] = ttest(allY{muscle});
+%     disp(p)
+% end
+% set(gca, 'fontsize', 14, 'fontname', 'arial', 'tickdir', 'out', "LineWidth", 2);
+% ylabel("last 20% EMG / first 20% EMG")
+% xlim([0.5 5.5])
+% xticklabels(xlabels)
+% yline(1)
+% hold off
 
 
 %% check abnormal EMG 
@@ -104,48 +107,48 @@ hold off
 % end
 
 %% correlation coeffecient b/w EMG and reward Axis
-% load('../data/processed/Rocky_rewProjDataByDay.mat');
-% load("../data/processed/singleTrials_Rocky2022to0303_0922_all.mat");
-% 
-% startidx=1;
-% X = cell(4, 5);
-% Y = cell(4, 5);
-% for d=(1:length(rewProjData_byDay))%length(rewProjData_byDay)
-%     rewardAxises = rewProjData_byDay{d};
-%     removeIndex = ~isnan(rewardAxises);
-%     nanRemovedRAxis = rewardAxises(removeIndex);
-%     
-%     TrialDataByDay = wholeTrialData.data(startidx:startidx+length(rewardAxises)-1);
-%     nanRemovedTrialData = TrialDataByDay(removeIndex);
-%     nanRemovedEMG = [nanRemovedTrialData.emg];
-% %     emgs = cat(3, nanRemovedEMG.EMG);
-%     goodEMG = vertcat(nanRemovedEMG.goodEMGData);
-%     kinematicsData = [nanRemovedTrialData.kinematics];
-%     rewardArray = [kinematicsData.rewardLabel];
-%     for muscle=(1:5)
-%         for reward=(1:4)
-%             condition = all([rewardArray==reward;goodEMG(:, muscle).']);
-%             selectedTrialData = nanRemovedTrialData(condition);
-%             emgdata = [selectedTrialData.emg];
-%             if ~isempty(emgdata)
-%                 emgs = cat(3, emgdata.EMG);
-%                 result = reshape(mean(emgs(50:250, muscle, :)), [size(emgs, 3),1]);
-%                 Y{reward, muscle} = cat(1, Y{reward, muscle}, result);
-%                 X{reward, muscle} = cat(1, X{reward, muscle}, nanRemovedRAxis(condition));
-%                 for singleTrialData = selectedTrialData
-%                     if singleTrialData.kinematics.rewardLabel ~= reward && ...
-%                        singleTrialData.emg.goodEMGData(muscle) ~= 1
-%                         error('incorrect label is included')
-%                     end
-%                 end
-%             end
-%         end
-%     end
-%     startidx=startidx+length(rewardAxises);
-% end
-% rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
-% for muscle=([2 5])
-%     figure
+load('../data/processed/Rocky_rewProjDataByDay.mat');
+load("../data/processed/singleTrials_Rocky2022to0303_0922_all.mat");
+
+startidx=1;
+X = cell(4, 5);
+Y = cell(4, 5);
+for d=(1:length(rewProjData_byDay))%length(rewProjData_byDay)
+    rewardAxises = rewProjData_byDay{d};
+    removeIndex = ~isnan(rewardAxises);
+    nanRemovedRAxis = rewardAxises(removeIndex);
+    
+    TrialDataByDay = wholeTrialData.data(startidx:startidx+length(rewardAxises)-1);
+    nanRemovedTrialData = TrialDataByDay(removeIndex);
+    nanRemovedEMG = [nanRemovedTrialData.emg];
+%     emgs = cat(3, nanRemovedEMG.EMG);
+    goodEMG = vertcat(nanRemovedEMG.goodEMGData);
+    kinematicsData = [nanRemovedTrialData.kinematics];
+    rewardArray = [kinematicsData.rewardLabel];
+    for muscle=(1:5)
+        for reward=(1:4)
+            condition = all([rewardArray==reward;goodEMG(:, muscle).']);
+            selectedTrialData = nanRemovedTrialData(condition);
+            emgdata = [selectedTrialData.emg];
+            if ~isempty(emgdata)
+                emgs = cat(3, emgdata.EMG);
+                result = reshape(mean(emgs(50:250, muscle, :)), [size(emgs, 3),1]);
+                Y{reward, muscle} = cat(1, Y{reward, muscle}, result);
+                X{reward, muscle} = cat(1, X{reward, muscle}, nanRemovedRAxis(condition));
+                for singleTrialData = selectedTrialData
+                    if singleTrialData.kinematics.rewardLabel ~= reward && ...
+                       singleTrialData.emg.goodEMGData(muscle) ~= 1
+                        error('incorrect label is included')
+                    end
+                end
+            end
+        end
+    end
+    startidx=startidx+length(rewardAxises);
+end
+rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
+for muscle=([2 5])
+    figure
 %     legendLabel = ["", "", "", ""];
 %     rewardLabel = ["S", "M", "L", "J"];
 %     for reward=(1:4)
@@ -158,15 +161,18 @@ hold off
 %         r=corrcoef(Y{reward, muscle}, X{reward, muscle});
 %         legendLabel(reward) = "r_" + rewardLabel(reward) + " = "+ num2str(round(r(1,2), 2));
 %     end
-%     hold off
-%     ylabel('Reward Axis');
-%     xlabel('average EMG around GoCue');
-%     title('Relationship Between RewardAxis and mean ' + wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle));
-%     legend(meanplot, legendLabel);
-% %     saveas(gcf, "../result/images/202209w3/scatterPlot_RAxis_EMG/" + ...
-% %         wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) + ".jpg");
-% %     close all
-% end
+    scatter(Y{:, muscle}, X{:, muscle}, 4, "k",'filled', 'MarkerEdgeAlpha', .1, 'MarkerFaceAlpha',.1);
+    hold on
+    meanplot = scatter(mean(Y{:, muscle}), mean(X{:, muscle}), 75, 'k', 'filled');
+    hold off
+    ylabel('Reward Axis');
+    xlabel('average EMG around GoCue');
+    title('Relationship Between RewardAxis and mean ' + wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle));
+    legend(meanplot, "r = "+ num2str(round(r(1,2), 2)));
+%     saveas(gcf, "../result/images/202209w3/scatterPlot_RAxis_EMG/" + ...
+%         wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) + ".jpg");
+%     close all
+end
 
 %% choking paper figures: probability distribution of each muscle as a function of rewards
 % load("../data/processed/singleTrials_Rocky2022to0303_0922.mat");

@@ -111,8 +111,8 @@ load('../data/processed/Rocky_rewProjDataByDay.mat');
 load("../data/processed/singleTrials_Rocky2022to0303_0922_all.mat");
 
 startidx=1;
-X = cell(4, 5);
-Y = cell(4, 5);
+X = cell(1, 5);
+Y = cell(1, 5);
 for d=(1:length(rewProjData_byDay))%length(rewProjData_byDay)
     rewardAxises = rewProjData_byDay{d};
     removeIndex = ~isnan(rewardAxises);
@@ -126,20 +126,17 @@ for d=(1:length(rewProjData_byDay))%length(rewProjData_byDay)
     kinematicsData = [nanRemovedTrialData.kinematics];
     rewardArray = [kinematicsData.rewardLabel];
     for muscle=(1:5)
-        for reward=(1:4)
-            condition = all([rewardArray==reward;goodEMG(:, muscle).']);
-            selectedTrialData = nanRemovedTrialData(condition);
-            emgdata = [selectedTrialData.emg];
-            if ~isempty(emgdata)
-                emgs = cat(3, emgdata.EMG);
-                result = reshape(mean(emgs(50:250, muscle, :)), [size(emgs, 3),1]);
-                Y{reward, muscle} = cat(1, Y{reward, muscle}, result);
-                X{reward, muscle} = cat(1, X{reward, muscle}, nanRemovedRAxis(condition));
-                for singleTrialData = selectedTrialData
-                    if singleTrialData.kinematics.rewardLabel ~= reward && ...
-                       singleTrialData.emg.goodEMGData(muscle) ~= 1
-                        error('incorrect label is included')
-                    end
+%         condition = all(goodEMG(:, muscle).');
+        selectedTrialData = nanRemovedTrialData(goodEMG(:, muscle).');
+        emgdata = [selectedTrialData.emg];
+        if ~isempty(emgdata)
+            emgs = cat(3, emgdata.EMG);
+            result = reshape(mean(emgs(50:250, muscle, :), 1), [size(emgs, 3),1]);
+            Y{muscle} = cat(1, Y{muscle}, result);
+            X{muscle} = cat(1, X{muscle}, nanRemovedRAxis(goodEMG(:, muscle).'));
+            for singleTrialData = selectedTrialData
+                if singleTrialData.emg.goodEMGData(muscle) ~= 1
+                    error('incorrect label is included')
                 end
             end
         end
@@ -147,28 +144,32 @@ for d=(1:length(rewProjData_byDay))%length(rewProjData_byDay)
     startidx=startidx+length(rewardAxises);
 end
 rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
-for muscle=([2 5])
+for muscle=(1:5)
     figure
-    legendLabel = ["", "", "", ""];
-    rewardLabel = ["S", "M", "L", "J"];
-    for reward=(1:4)
-        scatter(Y{reward, muscle}, X{reward, muscle}, 4, rewColors(reward, :), ...
-            'filled', 'MarkerEdgeAlpha', .1, 'MarkerFaceAlpha',.1);
-        hold on
-        meanplot(reward) = scatter(mean(Y{reward, muscle}), mean(X{reward, muscle}), 75, rewColors(reward, :), ...
-            'filled');
-        hold on
-        r=corrcoef(Y{reward, muscle}, X{reward, muscle});
-        legendLabel(reward) = "r_" + rewardLabel(reward) + " = "+ num2str(round(r(1,2), 2));
-    end
+%     legendLabel = ["", "", "", ""];
+%     rewardLabel = ["S", "M", "L", "J"];
+%     for reward=(1:4)
+%         scatter(Y{reward, muscle}, X{reward, muscle}, 4, rewColors(reward, :), ...
+%             'filled', 'MarkerEdgeAlpha', .1, 'MarkerFaceAlpha',.1);
+%         hold on
+%         meanplot(reward) = scatter(mean(Y{reward, muscle}), mean(X{reward, muscle}), 75, rewColors(reward, :), ...
+%             'filled');
+%         hold on
+%         r=corrcoef(Y{reward, muscle}, X{reward, muscle});
+%         legendLabel(reward) = "r_" + rewardLabel(reward) + " = "+ num2str(round(r(1,2), 2));
+%     end
+    scatter(Y{muscle}, X{muscle}, 4, "k",'filled', 'MarkerEdgeAlpha', .1, 'MarkerFaceAlpha',.1);
+    hold on
+    meanplot = scatter(mean(Y{muscle}), mean(X{muscle}), 75, 'k', 'filled');
     hold off
     ylabel('Reward Axis');
     xlabel('average EMG around GoCue');
     title('Relationship Between RewardAxis and mean ' + wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle));
-    legend(meanplot, legendLabel);
-%     saveas(gcf, "../result/images/202209w3/scatterPlot_RAxis_EMG/" + ...
-%         wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) + ".jpg");
-%     close all
+    r=corrcoef(Y{:, muscle}, X{:, muscle});
+    legend(meanplot, "r = "+ num2str(round(r(1,2), 2)));
+    saveas(gcf, "../result/images/202209w3/scatterPlot_RAxis_EMG/mono-" + ...
+        wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) + ".jpg");
+    close all
 end
 
 %% choking paper figures: probability distribution of each muscle as a function of rewards
