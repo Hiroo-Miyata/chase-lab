@@ -4,6 +4,111 @@ close all
 % load('../data/normalized/Rocky20220216to0303_ma50ms_successesOnly.mat');
 % load('../data/normalized/emg/Rocky20220216to0303_ma50ms_345.mat');
 
+
+%% choking paper debuging: find the reason of trap-correlation by day or direction
+load('../data/processed/Rocky_rewProjDataByDay.mat');
+load("../data/processed/singleTrials_Rocky2022to0303_0922_all.mat");
+
+startidx=1;
+muscle = 4; %trap
+X = cell(length(rewProjData_byDay), 4);
+Y = cell(length(rewProjData_byDay), 4);
+% X = cell(8,4);
+% Y = cell(8,4);
+for d=(1:length(rewProjData_byDay))
+    rewardAxises = rewProjData_byDay{d};
+    removeIndex = ~isnan(rewardAxises);
+    nanRemovedRAxis = rewardAxises(removeIndex);
+    
+    TrialDataByDay = wholeTrialData.data(startidx:startidx+length(rewardAxises)-1);
+    nanRemovedTrialData = TrialDataByDay(removeIndex);
+    nanRemovedEMG = [nanRemovedTrialData.emg];
+%     emgs = cat(3, nanRemovedEMG.EMG);
+    goodEMG = vertcat(nanRemovedEMG.goodEMGData);
+    kinematicsData = [nanRemovedTrialData.kinematics];
+    rewardArray = [kinematicsData.rewardLabel];
+    directionArray = [kinematicsData.directionLabel];
+    
+    for reward=(1:4)
+%         for direction=(1:8)
+%             condition = all([goodEMG(:, muscle).'; rewardArray==reward; directionArray==direction]);
+            condition = all([goodEMG(:, muscle).'; rewardArray==reward]);
+            selectedTrialData = nanRemovedTrialData(condition);
+            emgdata = [selectedTrialData.emg];
+            if ~isempty(emgdata)
+                emgs = cat(3, emgdata.EMG);
+                result = reshape(mean(emgs(50:250, muscle, :), 1), [size(emgs, 3),1]);
+                Y{d, reward} = cat(1, Y{d, reward}, result);
+                X{d, reward} = cat(1, X{d, reward}, nanRemovedRAxis(condition));
+%                 Y{direction, reward} = cat(1, Y{direction, reward}, result);
+%                 X{direction, reward} = cat(1, X{direction, reward}, nanRemovedRAxis(condition));
+                for singleTrialData = selectedTrialData
+                    if singleTrialData.emg.goodEMGData(muscle) ~= 1
+                        error('incorrect label is included')
+                    end
+                end
+            end
+%         end
+    end 
+    startidx=startidx+length(rewardAxises);
+end
+rewColors = [1 0 0; 1 0.6470 0; 0 0 1; 0 0 0];
+
+figure
+legendLabel = ["", "", "", ""];
+rewardLabel = ["S", "M", "L", "J"];
+for reward=(1:4)
+    Xall = cat(1, X{[4,5,6,8,9,10], reward});
+    Yall = cat(1, Y{[4,5,6,8,9,10], reward});
+    scatter(Yall, Xall, 4, rewColors(reward, :), ...
+        'filled', 'MarkerEdgeAlpha', .1, 'MarkerFaceAlpha',.1);
+    hold on
+    meanplot(reward) = scatter(mean(Yall), mean(Xall), 75, rewColors(reward, :), ...
+        'filled');
+    hold on
+    r=corrcoef(Yall, Xall);
+    legendLabel(reward) = "r_" + rewardLabel(reward) + " = "+ num2str(round(r(1,2), 2));
+end
+hold off
+ylabel('Reward Axis');
+xlabel('average EMG around GoCue');
+legend(meanplot, legendLabel, Location="best");
+title('Relationship Between RewardAxis and mean ' + wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle));
+    saveas(gcf, "../result/images/202210w2/corrTrapEachDay/"+ ...
+        wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) +"-Day23711rem" + ".jpg");
+% saveas(gcf, "../result/images/202210w2/corrTrapEachDirection/"+ ...
+%     wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) +"-" + ...
+%     num2str(45*(d-1)) + ".jpg");
+close all
+% for d=(1:size(X, 1))
+%     figure
+%     legendLabel = ["", "", "", ""];
+%     rewardLabel = ["S", "M", "L", "J"];
+%     for reward=(1:4)
+%         scatter(Y{d, reward}, X{d, reward}, 4, rewColors(reward, :), ...
+%             'filled', 'MarkerEdgeAlpha', .1, 'MarkerFaceAlpha',.1);
+%         hold on
+%         meanplot(reward) = scatter(mean(Y{d, reward}), mean(X{d, reward}), 75, rewColors(reward, :), ...
+%             'filled');
+%         hold on
+%         r=corrcoef(Y{d, reward}, X{d, reward});
+%         legendLabel(reward) = "r_" + rewardLabel(reward) + " = "+ num2str(round(r(1,2), 2));
+%     end
+%     hold off
+%     ylabel('Reward Axis');
+%     xlabel('average EMG around GoCue');
+%     legend(meanplot, legendLabel, Location="best");
+%     title('Relationship Between RewardAxis and mean ' + wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle));
+% %     saveas(gcf, "../result/images/202210w2/corrTrapEachDay/"+ ...
+% %         wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) +"-Day" + ...
+% %         num2str(d) + ".jpg");
+%     saveas(gcf, "../result/images/202210w2/corrTrapEachDirection/"+ ...
+%         wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) +"-" + ...
+%         num2str(45*(d-1)) + ".jpg");
+%     close all
+% end
+
+
 %% Fatigue: summation of Peri-movement change across session
 % load("../data/processed/singleTrials_Rocky2022to0303_0922.mat");
 % 
@@ -80,32 +185,31 @@ close all
 %     end
 %     startidx=startidx+endidx;
 % end
-
-pValues = zeros(5,8);
-for muscle=(5:5)
-    figure
-    plotPositions = [6, 3, 2, 1, 4, 7, 8, 9];
-    for direction=(1:8)
-        subplot(3,3, plotPositions(direction))
-        edges = (-2.5:0.25:0);
-        histogram(allYwithD{muscle, direction}(1, :), edges, EdgeColor="none", FaceColor=[0.7 0.7 0.7]);
-        hold on
-        histogram(allYwithD{muscle, direction}(2, :), edges, EdgeColor="none", FaceColor='k');
-        hold on
-        xline(mean(allYwithD{muscle, direction}(1, :)), Color="r", LineWidth=2)
-        hold on
-        xline(mean(allYwithD{muscle, direction}(2, :)), Color="b", LineWidth=2)
-        [h,p] = ttest(allYwithD{muscle, direction}(1, :), allYwithD{muscle, direction}(2, :));
-        pValues(muscle, direction) = p;
-        title("p="+num2str(p));
-    end
-    xlabel("mean EMG around peak")
-    ylabel("counts")
-    sgtitle(wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) + ...
-        " change between first and last 20% trial");
-    hold off
-end
-
+% 
+% pValues = zeros(5,8);
+% for muscle=(5:5)
+%     figure
+%     plotPositions = [6, 3, 2, 1, 4, 7, 8, 9];
+%     for direction=(1:8)
+%         subplot(3,3, plotPositions(direction))
+%         edges = (-2.5:0.25:0);
+%         histogram(allYwithD{muscle, direction}(1, :), edges, EdgeColor="none", FaceColor=[0.7 0.7 0.7]);
+%         hold on
+%         histogram(allYwithD{muscle, direction}(2, :), edges, EdgeColor="none", FaceColor='k');
+%         hold on
+%         xline(mean(allYwithD{muscle, direction}(1, :)), Color="r", LineWidth=2)
+%         hold on
+%         xline(mean(allYwithD{muscle, direction}(2, :)), Color="b", LineWidth=2)
+%         [h,p] = ttest(allYwithD{muscle, direction}(1, :), allYwithD{muscle, direction}(2, :));
+%         pValues(muscle, direction) = p;
+%         title("p="+num2str(p));
+%     end
+%     xlabel("mean EMG around peak")
+%     ylabel("counts")
+%     sgtitle(wholeTrialData.sessionProp(1).EMGMetrics.muscleNames(muscle) + ...
+%         " change between first and last 20% trial");
+%     hold off
+% end
 
 %% Fatigue: Peri-movement EMG change across session
 % load("../data/processed/singleTrials_Rocky2022to0303_0922.mat");
